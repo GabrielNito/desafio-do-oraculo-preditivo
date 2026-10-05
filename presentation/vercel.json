@@ -1,5 +1,15 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/s/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/themes/:path*",
+      "destination": "/"
+    }
+  ]
 }
