@@ -3,3 +3,5 @@ dist/
 .open-slide/
 .claude/
 .DS_Store
+.vercel
+.env*
