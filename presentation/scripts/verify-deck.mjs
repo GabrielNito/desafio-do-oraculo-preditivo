@@ -8,6 +8,13 @@ const deckPath = path.join(root, 'slides', 'ecommerce-oracle', 'index.tsx');
 const themePath = path.join(root, 'themes', 'technical-oracle.md');
 const demoPath = path.join(root, 'themes', 'technical-oracle.demo.tsx');
 const notebookPath = path.resolve(root, '..', 'notebooks', 'ecommerce_customers.ipynb');
+const assetsPath = path.join(root, 'slides', 'ecommerce-oracle', 'assets');
+const requiredAssets = [
+  'eda-target-distribution.png',
+  'eda-feature-distributions.png',
+  'eda-correlation-heatmap.png',
+  'eda-outlier-boxplots.png',
+];
 
 const contractOnly = process.argv.includes('--contract-only');
 
@@ -23,6 +30,9 @@ function requireIncludes(value, expected, label) {
 
 if (!fs.existsSync(deckPath)) fail(`missing deck: ${deckPath}`);
 if (!fs.existsSync(themePath) || !fs.existsSync(demoPath)) fail('theme bundle is incomplete');
+for (const asset of requiredAssets) {
+  if (!fs.existsSync(path.join(assetsPath, asset))) fail(`missing EDA asset: ${asset}`);
+}
 
 const deck = fs.readFileSync(deckPath, 'utf8');
 const theme = fs.readFileSync(themePath, 'utf8');
@@ -72,6 +82,13 @@ requireIncludes(outputText, [
   'Quantidade de linhas: 500',
   'Quantidade de colunas: 8',
   'Quantidade de registros duplicados: 0',
+  'Dados utilizados na EDA: 400 registros de treinamento.',
+  'Maior associação linear com o target: Length of Membership (0.818)',
+  'Menor associação linear com o target: Time on Website (0.010)',
+  'Maior correlação absoluta entre features: 0.079',
+  'Número de condição da matriz de correlação das features: 1.242',
+  'Linhas únicas com pelo menos um candidato a outlier: 18 de 400 (4.50%).',
+  'Protocolo da Etapa 02 preservado após a EDA: OK',
 ], 'notebook outputs');
 
 const dtypeSummaryMatch = outputText.match(/dtypes:\s*([^\r\n]+)/i);
@@ -89,7 +106,22 @@ const dtypeColumnCount = dtypeEntries.reduce((total, [, , count]) => total + Num
 if (dtypeColumnCount !== 8 || numericColumnCount !== 5 || textualColumnCount !== 3) {
   fail(`notebook dtype structure differs: ${numericColumnCount} numeric, ${textualColumnCount} textual, ${dtypeColumnCount} total`);
 }
-requireIncludes(notebookSource, ['df.head()', 'df.shape', 'df.info()', 'df.isnull().sum()', 'df.duplicated().sum()'], 'notebook source');
+requireIncludes(notebookSource, [
+  'df.head()',
+  'df.shape',
+  'df.info()',
+  'df.isnull().sum()',
+  'df.duplicated().sum()',
+  'dados_eda = X_train.copy()',
+  'y_train.reindex(dados_eda.index)',
+  'estatisticas_descritivas',
+  'matriz_correlacao_treino',
+  'np.linalg.cond',
+  'tabela_vif',
+  "'IQR'",
+  'indices_outliers_unicos',
+  'boxplot',
+], 'notebook source');
 requireIncludes(deck, [
   '500',
   '8',
@@ -110,10 +142,20 @@ requireIncludes(deck, [
   'fit_transform()',
   'transform()',
   'Pipeline',
+  'EDA',
+  '501,99',
+  '0,818',
+  '0,079',
+  '1,002',
+  '1,010',
+  '18 / 400',
+  '1,5 × IQR',
+  '0 REMOVIDAS',
 ], 'deck evidence');
 
 if (/variável-alvo ainda não foi definida/i.test(deck)) fail('deck retains the stale undefined-target claim');
 if (/treino · teste · pré-processamento/i.test(deck)) fail('deck retains the stale pending-preprocessing claim');
+if (/EDA completa ainda não foi realizada/i.test(deck)) fail('deck retains the stale pending-EDA claim');
 if (/(?:R²|RMSE|MAPE|MAE)\s*[:=]\s*\d/i.test(deck)) fail('deck contains an unverified metric value');
 if (/(?:modelo vencedor|modelo recomendado|random forest venceu|svr venceu|regressão linear venceu)/i.test(deck)) fail('deck contains an unverified verdict');
 if (!/ainda não|a definir|não realizado/i.test(deck)) fail('deck does not mark unfinished work');

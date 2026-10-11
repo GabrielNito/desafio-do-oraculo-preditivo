@@ -17,7 +17,10 @@ duplicadas. A Etapa 02 também está refletida no deck: o target é
 divisão reproduzível é de 400 registros para treino e 100 para teste. O
 `StandardScaler` é ajustado somente no treino.
 
-A EDA completa continua pendente. O deck não apresenta modelos treinados,
+A EDA foi concluída no conjunto de treinamento e está refletida em seis novos
+slides: distribuição do target e das features, correlações, heatmap,
+multicolinearidade, outliers e síntese. Os gráficos reproduzíveis ficam em
+`slides/ecommerce-oracle/assets/`. O deck não apresenta modelos treinados,
 métricas, conclusões de desempenho ou vencedor.
 
 ## Executar localmente
@@ -44,7 +47,8 @@ node scripts/verify-deck.mjs
 
 ## Organização
 
-- `slides/ecommerce-oracle/`: nove páginas sustentadas pelo notebook atual.
+- `slides/ecommerce-oracle/`: quinze páginas sustentadas pelo notebook atual.
+- `slides/ecommerce-oracle/assets/`: gráficos da EDA gerados pelo notebook.
 - `themes/technical-oracle.md`: direção visual e componentes fixos.
 - `themes/technical-oracle.demo.tsx`: demonstração do tema no painel Themes.
 - `scripts/verify-deck.mjs`: checagens de contrato e fidelidade aos outputs do notebook, com contagem dinâmica de páginas e notes.

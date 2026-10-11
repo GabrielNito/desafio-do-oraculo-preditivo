@@ -24,6 +24,10 @@ const c = {
 
 const mono = 'SFMono-Regular, "Cascadia Code", "Roboto Mono", ui-monospace, Menlo, monospace';
 const display = 'Arial, Helvetica, sans-serif';
+const targetDistributionImage = new URL('./assets/eda-target-distribution.png', import.meta.url).href;
+const featureDistributionsImage = new URL('./assets/eda-feature-distributions.png', import.meta.url).href;
+const correlationHeatmapImage = new URL('./assets/eda-correlation-heatmap.png', import.meta.url).href;
+const outlierBoxplotsImage = new URL('./assets/eda-outlier-boxplots.png', import.meta.url).href;
 const easeOut = 'cubic-bezier(0, 0, 0.2, 1)';
 const easeIn = 'cubic-bezier(0.4, 0, 1, 1)';
 
@@ -89,7 +93,7 @@ const Subheading = ({ children, maxWidth = 1100 }: { children: ReactNode; maxWid
   <p style={{ margin: '24px 0 0', maxWidth, color: c.muted, fontSize: 32, lineHeight: 1.42 }}>{children}</p>
 );
 
-type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state' | 'target' | 'split' | 'scaling';
+type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state' | 'target' | 'split' | 'scaling' | 'eda-target' | 'eda-features' | 'eda-correlation' | 'eda-heatmap' | 'eda-outliers' | 'eda-summary';
 type NodeStatus = 'done' | 'active' | 'pending' | 'future';
 
 const FlowNode = ({ label, status }: { label: string; status: NodeStatus }) => {
@@ -108,7 +112,7 @@ const RailConnector = ({ status }: { status: NodeStatus }) => (
 
 const FlowRail = ({ stage }: { stage: Stage }) => {
   const client: NodeStatus = stage === 'cover' ? 'active' : 'done';
-  const data: NodeStatus = stage === 'cover' || stage === 'problem' || stage === 'dataset' || stage === 'quality' ? 'active' : 'done';
+  const data: NodeStatus = stage === 'cover' || stage === 'problem' || stage === 'dataset' || stage === 'quality' || stage.startsWith('eda-') ? 'active' : 'done';
   const features: NodeStatus = stage === 'structure' || stage === 'target' ? 'active' : stage === 'problem' || stage === 'dataset' || stage === 'quality' ? 'pending' : 'done';
   return (
     <div style={{ position: 'absolute', left: 128, bottom: 112, zIndex: 2 }}>
@@ -160,6 +164,16 @@ const QualityMetric = ({ value, label, detail }: { value: string; label: string;
 
 const FieldLine = ({ children, color = c.soft }: { children: ReactNode; color?: string }) => (
   <div style={{ minHeight: 42, boxSizing: 'border-box', borderBottom: `1px solid ${c.line}`, display: 'flex', alignItems: 'center', color, fontFamily: mono, fontSize: 22 }}>{children}</div>
+);
+
+const CorrelationRow = ({ label, value, valueText }: { label: string; value: number; valueText: string }) => (
+  <div style={{ display: 'flex', alignItems: 'center', minHeight: 72, borderBottom: `1px solid ${c.line}` }}>
+    <div style={{ width: 390, color: c.soft, fontFamily: mono, fontSize: 22 }}>{label}</div>
+    <div style={{ width: 720, height: 12, background: c.line, position: 'relative' }}>
+      <div style={{ width: `${Math.abs(value) * 720}px`, height: 12, background: c.accent }} />
+    </div>
+    <div style={{ width: 120, marginLeft: 28, color: c.accent, fontFamily: display, fontSize: 34, fontWeight: 800 }}>{valueText}</div>
+  </div>
 );
 
 const StateLine = ({ children, color = c.soft }: { children: ReactNode; color?: string }) => (
@@ -320,7 +334,7 @@ const S06State: Page = () => (
         <StateLine color={c.accent}>escala · StandardScaler no treino</StateLine>
       </div>
     </div>
-    <div style={{ position: 'absolute', left: 176, top: 838, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>PENDENTE · EDA E MODELAGEM</div>
+    <div style={{ position: 'absolute', left: 176, top: 838, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>PENDENTE · MODELAGEM, MÉTRICAS E CV</div>
   </Frame>
 );
 
@@ -459,16 +473,153 @@ const S09Scaling: Page = () => (
   </Frame>
 );
 
+// ── SLIDE 10 — Target distribution ────────────────────────────────────────
+const S10TargetDistribution: Page = () => (
+  <Frame stage="eda-target">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>09 · EDA · TARGET</Eyebrow>
+      <Heading>O gasto anual se concentra perto de 502.</Heading>
+      <Subheading maxWidth={1160}>Histograma do target nos 400 registros de treinamento.</Subheading>
+    </div>
+    <img src={targetDistributionImage} alt="Histograma de Yearly Amount Spent no conjunto de treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1120, height: 470, objectFit: 'contain', objectPosition: 'left center' }} />
+    <div style={{ position: 'absolute', left: 1360, top: 386, width: 360, borderTop: `1px solid ${c.accent}`, borderBottom: `1px solid ${c.line}`, padding: '24px 0 28px' }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.14em' }}>TREINO · N = 400</div>
+      <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 60, fontWeight: 800 }}>501,99</div>
+      <div style={{ marginTop: 8, color: c.muted, fontSize: 24 }}>média do gasto anual</div>
+      <div style={{ marginTop: 26, color: c.soft, fontFamily: mono, fontSize: 22 }}>ASSIMETRIA · 0,068</div>
+      <div style={{ marginTop: 8, color: c.muted, fontSize: 22 }}>formato global equilibrado</div>
+    </div>
+  </Frame>
+);
+
+// ── SLIDE 11 — Feature distributions ──────────────────────────────────────
+const S11FeatureDistributions: Page = () => (
+  <Frame stage="eda-features">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>10 · EDA · FEATURES</Eyebrow>
+      <Heading>As quatro features têm dispersões próprias.</Heading>
+      <Subheading maxWidth={1220}>As quatro distribuições usam eixos separados.</Subheading>
+    </div>
+    <img src={featureDistributionsImage} alt="Histogramas das quatro features selecionadas no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1160, height: 520, objectFit: 'contain', objectPosition: 'left center' }} />
+    <div style={{ position: 'absolute', left: 1430, top: 380, width: 300, borderTop: `1px solid ${c.accent}`, paddingTop: 22 }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.12em' }}>LEITURA</div>
+      <div style={{ marginTop: 16, color: c.muted, fontSize: 24, lineHeight: 1.45 }}>As variáveis se concentram em faixas estreitas, mas cada faixa tem uma unidade diferente.</div>
+      <div style={{ marginTop: 28, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>NÃO COMPARAR ESCALAS</div>
+      <div style={{ marginTop: 8, color: c.muted, fontSize: 22 }}>A padronização fica preparada para os modelos sensíveis à escala.</div>
+    </div>
+  </Frame>
+);
+
+// ── SLIDE 12 — Target correlations ────────────────────────────────────────
+const S12TargetCorrelations: Page = () => (
+  <Frame stage="eda-correlation">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>11 · EDA · CORRELAÇÕES</Eyebrow>
+      <Heading>Membership é a associação linear mais forte.</Heading>
+      <Subheading maxWidth={1280}>Pearson entre cada feature e o target no treino.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 368, width: 1260 }}>
+      <CorrelationRow label="Length of Membership" value={0.818441} valueText="0,818" />
+      <CorrelationRow label="Time on App" value={0.509011} valueText="0,509" />
+      <CorrelationRow label="Avg. Session Length" value={0.324297} valueText="0,324" />
+      <CorrelationRow label="Time on Website" value={0.009648} valueText="0,010" />
+    </div>
+    <div style={{ position: 'absolute', left: 1500, top: 394, width: 270, borderTop: `1px solid ${c.attention}`, paddingTop: 22 }}>
+      <div style={{ color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>CAUTELA</div>
+      <div style={{ marginTop: 16, color: c.muted, fontSize: 24, lineHeight: 1.45 }}>Associação linear não é causalidade. Uma correlação baixa também não prova inutilidade em conjunto.</div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 756, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>PEARSON · TREINO · 400 REGISTROS</div>
+  </Frame>
+);
+
+// ── SLIDE 13 — Correlation heatmap ────────────────────────────────────────
+const S13CorrelationHeatmap: Page = () => (
+  <Frame stage="eda-heatmap">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>12 · EDA · MULTICOLINEARIDADE</Eyebrow>
+      <Heading>As features apresentam correlações fracas.</Heading>
+      <Subheading maxWidth={1260}>Heatmap das features e do target, em escala de −1 a +1.</Subheading>
+    </div>
+    <img src={correlationHeatmapImage} alt="Heatmap de correlação das features e do target no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1120, height: 530, objectFit: 'contain', objectPosition: 'left center' }} />
+    <div style={{ position: 'absolute', left: 1400, top: 366, width: 320, borderTop: `1px solid ${c.accent}`, paddingTop: 22 }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>ENTRE FEATURES</div>
+      <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 56, fontWeight: 800 }}>0,079</div>
+      <div style={{ marginTop: 6, color: c.muted, fontSize: 22 }}>maior |r| observado</div>
+      <div style={{ marginTop: 30, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.1em' }}>VIF · 1,002 — 1,010</div>
+      <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.4 }}>Sem evidência relevante de multicolinearidade nesta amostra.</div>
+    </div>
+  </Frame>
+);
+
+// ── SLIDE 14 — Outliers ───────────────────────────────────────────────────
+const S14Outliers: Page = () => (
+  <Frame stage="eda-outliers">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>13 · EDA · OUTLIERS</Eyebrow>
+      <Heading>Candidatos a outlier pedem contexto.</Heading>
+      <Subheading maxWidth={1260}>Candidatos pela regra de 1,5 × IQR; nenhum registro foi removido.</Subheading>
+    </div>
+    <img src={outlierBoxplotsImage} alt="Boxplots das quatro features e do target no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1160, height: 520, objectFit: 'contain', objectPosition: 'left center' }} />
+    <div style={{ position: 'absolute', left: 1420, top: 360, width: 320, borderTop: `1px solid ${c.attention}`, paddingTop: 22 }}>
+      <div style={{ color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>IQR · TREINO</div>
+      <div style={{ marginTop: 20, color: 'var(--osd-text)', fontFamily: display, fontSize: 54, fontWeight: 800 }}>18</div>
+      <div style={{ marginTop: 6, color: c.muted, fontSize: 22 }}>linhas únicas candidatas</div>
+      <div style={{ marginTop: 28, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.1em' }}>0 REMOVIDAS</div>
+      <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.4 }}>Não há evidência concreta de erro de entrada ou unidade inválida.</div>
+    </div>
+  </Frame>
+);
+
+// ── SLIDE 15 — EDA summary ────────────────────────────────────────────────
+const S15EdaSummary: Page = () => (
+  <Frame stage="eda-summary">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>14 · EDA · SÍNTESE</Eyebrow>
+      <Heading>A EDA reduz a incerteza.</Heading>
+      <Subheading maxWidth={1320}>As decisões permanecem descritivas e não antecipam desempenho de nenhum modelo.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 400, display: 'flex', gap: 56 }}>
+      <div style={{ width: 330, borderTop: `1px solid ${c.accent}`, paddingTop: 18 }}>
+        <div style={{ color: c.accent, fontFamily: display, fontSize: 54, fontWeight: 800 }}>501,99</div>
+        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>MÉDIA DO TARGET</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>assimetria 0,068</div>
+      </div>
+      <div style={{ width: 330, borderTop: `1px solid ${c.accent}`, paddingTop: 18 }}>
+        <div style={{ color: c.accent, fontFamily: display, fontSize: 54, fontWeight: 800 }}>0,818</div>
+        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>MAIOR ASSOCIAÇÃO</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>Length of Membership</div>
+      </div>
+      <div style={{ width: 330, borderTop: `1px solid ${c.soft}`, paddingTop: 18 }}>
+        <div style={{ color: c.soft, fontFamily: display, fontSize: 54, fontWeight: 800 }}>1,002–1,010</div>
+        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>VIF DAS FEATURES</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>colinearidade baixa</div>
+      </div>
+      <div style={{ width: 330, borderTop: `1px solid ${c.attention}`, paddingTop: 18 }}>
+        <div style={{ color: c.attention, fontFamily: display, fontSize: 54, fontWeight: 800 }}>18 / 400</div>
+        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>CANDIDATOS IQR</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>preservados · 0 removidos</div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 760, color: c.accent, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>FEATURES MANTIDAS · PROTOCOLO INTACTO · MODELAGEM PENDENTE</div>
+  </Frame>
+);
+
 export const notes = [
   'Abra nomeando o projeto e o grupo. A capa apresenta a metáfora do oráculo como um sistema técnico: sinais entram, uma estimativa poderá sair. Ainda não existe modelo executado; o ponto de interrogação é deliberado.',
   'Este slide introduz a pergunta do projeto. O notebook agora confirma que Yearly Amount Spent é o target: o valor gasto anualmente pelo cliente. Como a saída é numérica e contínua, o problema é de regressão. A definição do target não significa que algum modelo já tenha sido treinado.',
   'Mostre os números diretamente comprovados pelos outputs: 500 registros e 8 colunas. O arquivo foi carregado com pandas a partir de ../data/Ecommerce Customers e o README o descreve como CSV sem extensão. Este slide fala de dimensão, não de qualidade ou desempenho.',
   'A tabela vem de df.dtypes e da classificação preliminar criada no notebook: cinco colunas float64 e três colunas str. A Etapa 02 transforma essa inspeção em uma decisão explícita: quatro numéricas serão features, Yearly Amount Spent será o target e os três textos serão excluídos.',
   'Os dois zeros são verificações específicas: zero valores ausentes em todas as colunas e zero linhas completamente duplicadas. Isso não prova ausência de outliers, consistência estatística ou adequação para modelagem. Nenhum registro foi removido e não houve tratamento de nulos ou duplicatas nesta etapa.',
-  'O painel azul resume a inspeção inicial: carregamento, estrutura, tipos, valores ausentes e duplicatas. O painel de entregas da Etapa 02 destaca o target, as quatro features, a divisão 400/100 e o StandardScaler ajustado no treino. A EDA completa ainda não foi realizada e modelos, métricas, resíduos e avaliação de overfitting continuam pendentes.',
+  'O painel azul resume a inspeção inicial: carregamento, estrutura, tipos, valores ausentes e duplicatas. O painel de entregas da Etapa 02 destaca o target, as quatro features, a divisão 400/100 e o StandardScaler ajustado no treino. A EDA agora foi concluída; modelos, métricas, resíduos, avaliação de overfitting e validação cruzada continuam pendentes.',
   'O target é a variável dependente y, o valor que queremos prever. As quatro features são variáveis independentes X ligadas a sessão, aplicativo, website e duração de relacionamento. Email, Address e Avatar não entram: são identificadores textuais ou não possuem significado preditivo justificado para este experimento. Por isso não aplicamos encoding categórico.',
   'A divisão usa os 500 registros reais: 400 para treino e 100 para teste, equivalentes a 80% e 20%. random_state=42 fixa o sorteio para que Linear, Random Forest e SVR recebam os mesmos registros. Treino aprende padrões; teste permanece reservado para a avaliação futura de generalização.',
-  'O StandardScaler é preparado em duas operações. fit_transform aprende média e desvio apenas em X_train; transform aplica os mesmos parâmetros em X_test. SVR é sensível à escala, enquanto Random Forest geralmente não precisa dela e Regressão Linear sem regularização conserva capacidade preditiva equivalente em condições usuais. Em validação cruzada, o scaler deverá ficar dentro de um Pipeline em cada fold. Nenhuma métrica ou modelo foi calculado nesta etapa.',
+  'O StandardScaler é preparado em duas operações. fit_transform aprende média e desvio apenas em X_train; transform aplica os mesmos parâmetros em X_test. SVR é sensível à escala, enquanto Random Forest geralmente não precisa dela e Regressão Linear sem regularização conserva capacidade preditiva equivalente em condições usuais. Em validação cruzada, o scaler deverá ficar dentro de um Pipeline em cada fold. A EDA está concluída, mas nenhuma métrica ou modelo foi calculado.',
+  'O histograma usa os 400 registros de treinamento e não assume uma moeda específica. A média observada é 501,99, a mediana é 502,01 e a assimetria calculada é 0,068. Isso descreve concentração e dispersão da amostra; não é uma demonstração de normalidade nem de qualidade preditiva.',
+  'Esta grade mostra as quatro distribuições nas unidades originais. A leitura importante é a concentração em faixas relativamente estreitas, sem comparar diretamente escalas. O StandardScaler já foi preparado na Etapa 02 para os modelos que dependem mais da escala.',
+  'As barras usam correlação de Pearson entre cada feature e Yearly Amount Spent. Length of Membership aparece com 0,818, Time on App com 0,509, Avg. Session Length com 0,324 e Time on Website com 0,010. Fale em associação linear, nunca em causalidade. A correlação baixa de uma feature não autoriza removê-la automaticamente.',
+  'O heatmap reúne features e target na mesma matriz. Entre as features, o maior valor absoluto é 0,079. O VIF calculado apenas com os preditores varia de 1,002 a 1,010, com matriz bem condicionada. Isso não indica multicolinearidade relevante nesta amostra, mas não é um limiar universal nem uma previsão de desempenho.',
+  'Os boxplots mostram candidatos pela regra de 1,5 vezes o IQR. Há 2, 3, 1, 12 e 6 candidatos nas cinco variáveis, respectivamente, e 18 linhas únicas na união. Um extremo estatístico não é automaticamente erro: sem evidência de inconsistência, a decisão foi preservar todos os registros. A próxima transição é a síntese.',
+  'A síntese fecha a EDA com quatro evidências: target centrado em 501,99, maior associação de 0,818, VIFs próximos de 1 e 18 linhas candidatas mantidas. Estas conclusões descrevem o treinamento e preservam o protocolo aprovado. A modelagem, as métricas, a validação cruzada e a análise de resíduos continuam para a etapa seguinte.'
 ] satisfies (string | undefined)[];
 
 export const meta: SlideMeta = {
@@ -477,4 +628,4 @@ export const meta: SlideMeta = {
   createdAt: '2026-10-05T01:04:16.943Z',
 };
 
-export default [S01Cover, S02Problem, S03Dataset, S04Structure, S05Quality, S06State, S07Target, S08Split, S09Scaling] satisfies Page[];
+export default [S01Cover, S02Problem, S03Dataset, S04Structure, S05Quality, S06State, S07Target, S08Split, S09Scaling, S10TargetDistribution, S11FeatureDistributions, S12TargetCorrelations, S13CorrelationHeatmap, S14Outliers, S15EdaSummary] satisfies Page[];

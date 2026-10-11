@@ -24,11 +24,11 @@ Estudar um problema de regressão relacionado ao comportamento de clientes de um
 
 ## Estado atual do projeto
 
-A inspeção inicial da Etapa 01 está registrada: o dataset possui 500 registros e 8 colunas, sem valores ausentes e sem linhas completamente duplicadas. A EDA completa ainda está pendente; distribuição, correlação, multicolinearidade e outliers não foram declarados concluídos.
+A Etapa 01 foi concluída no notebook sobre os 400 registros de treinamento: estatística descritiva, distribuição do target e das features, correlações de Pearson, heatmap, VIF, candidatos a outliers pela regra de 1,5 × IQR e decisão de manutenção foram documentados. O dataset original possui 500 registros e 8 colunas, sem valores ausentes e sem linhas completamente duplicadas.
 
 A Etapa 02 foi implementada no notebook. O target é `Yearly Amount Spent`; as features são `Avg. Session Length`, `Time on App`, `Time on Website` e `Length of Membership`. `Email`, `Address` e `Avatar` foram excluídas com justificativa. A divisão única usa 80% para treino, 20% para teste e `random_state=42`, com `StandardScaler` ajustado somente em `X_train`.
 
-Ainda não foram treinados os três regressores, calculadas métricas, executada validação cruzada ou realizada análise de resíduos e overfitting.
+Os candidatos a outliers foram preservados: a união dos índices contém 18 de 400 linhas de treino, sem evidência concreta de erro de registro. Ainda não foram treinados os três regressores, calculadas métricas, executada validação cruzada ou realizada análise de resíduos e overfitting.
 
 ## Execução mínima
 
