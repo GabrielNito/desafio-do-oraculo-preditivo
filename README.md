@@ -24,9 +24,11 @@ Estudar um problema de regressão relacionado ao comportamento de clientes de um
 
 ## Estado atual do projeto
 
-Esta versão está na fase de carregamento e inspeção inicial dos dados. O notebook apresenta as primeiras linhas, as dimensões, a estrutura, os tipos das colunas, os valores ausentes e os registros duplicados.
+A inspeção inicial da Etapa 01 está registrada: o dataset possui 500 registros e 8 colunas, sem valores ausentes e sem linhas completamente duplicadas. A EDA completa ainda está pendente; distribuição, correlação, multicolinearidade e outliers não foram declarados concluídos.
 
-Ainda não foram implementados a Análise Exploratória de Dados completa, o pré-processamento, a divisão entre treino e teste ou qualquer modelo de Machine Learning.
+A Etapa 02 foi implementada no notebook. O target é `Yearly Amount Spent`; as features são `Avg. Session Length`, `Time on App`, `Time on Website` e `Length of Membership`. `Email`, `Address` e `Avatar` foram excluídas com justificativa. A divisão única usa 80% para treino, 20% para teste e `random_state=42`, com `StandardScaler` ajustado somente em `X_train`.
+
+Ainda não foram treinados os três regressores, calculadas métricas, executada validação cruzada ou realizada análise de resíduos e overfitting.
 
 ## Execução mínima
 
@@ -40,4 +42,6 @@ cd notebooks
 jupyter notebook ecommerce_customers.ipynb
 ```
 
-O notebook deve ser executado com a pasta `notebooks/` como diretório de trabalho, pois utiliza o caminho relativo `../data/Ecommerce Customers` para carregar o dataset.
+O notebook deve ser executado com a pasta `notebooks/` como diretório de trabalho, pois utiliza o caminho relativo `../data/Ecommerce Customers` para carregar o dataset. Para executar integralmente sem abrir a interface, use `jupyter nbconvert --to notebook --execute --inplace ecommerce_customers.ipynb` dentro de `notebooks/`.
+
+As dependências Python usam faixas de compatibilidade registradas em `requirements.txt`; elas foram verificadas no ambiente local com Python 3.14.7.

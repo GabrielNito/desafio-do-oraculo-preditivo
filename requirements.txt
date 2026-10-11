@@ -1,2 +1,4 @@
-pandas
-jupyter
+# Faixas compatíveis verificadas no ambiente local com Python 3.14.7.
+pandas>=3.0,<4
+scikit-learn>=1.9,<2
+jupyter>=1.1,<2

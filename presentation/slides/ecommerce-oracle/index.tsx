@@ -89,7 +89,7 @@ const Subheading = ({ children, maxWidth = 1100 }: { children: ReactNode; maxWid
   <p style={{ margin: '24px 0 0', maxWidth, color: c.muted, fontSize: 32, lineHeight: 1.42 }}>{children}</p>
 );
 
-type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state';
+type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state' | 'target' | 'split' | 'scaling';
 type NodeStatus = 'done' | 'active' | 'pending' | 'future';
 
 const FlowNode = ({ label, status }: { label: string; status: NodeStatus }) => {
@@ -109,7 +109,7 @@ const RailConnector = ({ status }: { status: NodeStatus }) => (
 const FlowRail = ({ stage }: { stage: Stage }) => {
   const client: NodeStatus = stage === 'cover' ? 'active' : 'done';
   const data: NodeStatus = stage === 'cover' || stage === 'problem' || stage === 'dataset' || stage === 'quality' ? 'active' : 'done';
-  const features: NodeStatus = stage === 'structure' ? 'active' : stage === 'problem' || stage === 'dataset' || stage === 'quality' || stage === 'state' ? 'pending' : 'future';
+  const features: NodeStatus = stage === 'structure' || stage === 'target' ? 'active' : stage === 'problem' || stage === 'dataset' || stage === 'quality' ? 'pending' : 'done';
   return (
     <div style={{ position: 'absolute', left: 128, bottom: 112, zIndex: 2 }}>
       <div style={{ marginBottom: 12, color: c.muted, fontFamily: mono, fontSize: 16, letterSpacing: '0.16em', textTransform: 'uppercase' }}>pipeline / estado atual</div>
@@ -196,19 +196,19 @@ const S02Problem: Page = () => (
     <div style={{ position: 'absolute', left: 152, top: 126 }}>
       <Eyebrow>01 · O PROBLEMA</Eyebrow>
       <Heading>O que queremos prever?</Heading>
-      <Subheading>O projeto é de regressão. A variável-alvo ainda não foi definida no notebook.</Subheading>
+      <Subheading>O projeto é de regressão. O target agora está confirmado no arquivo real.</Subheading>
     </div>
     <div style={{ position: 'absolute', left: 224, top: 470, display: 'flex', alignItems: 'center', gap: 26 }}>
       <PredictionNode label="DADOS DO CLIENTE" detail="comportamento observado" accent />
       <Connector width={112} />
-      <div style={{ width: 144, height: 144, border: `1px solid ${c.attention}`, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: c.attention }}>
-        <span style={{ fontFamily: display, fontSize: 74, lineHeight: 0.9 }}>?</span>
-        <span style={{ marginTop: 12, fontFamily: mono, fontSize: 16, letterSpacing: '0.1em' }}>TARGET</span>
+      <div style={{ width: 208, height: 144, border: `1px solid ${c.accent}`, background: `${c.accent}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: c.accent }}>
+        <span style={{ fontFamily: mono, fontSize: 20, letterSpacing: '0.12em' }}>TARGET (y)</span>
+        <span style={{ marginTop: 16, fontFamily: display, fontSize: 32, fontWeight: 800 }}>CONTÍNUO</span>
       </div>
-      <Connector width={112} color={c.line} />
-      <PredictionNode label="VALOR CONTÍNUO" detail="a ser estimado" />
+      <Connector width={92} color={c.line} />
+      <PredictionNode label="YEARLY AMOUNT" detail="valor gasto anualmente" />
     </div>
-    <div style={{ position: 'absolute', left: 250, top: 715, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.1em' }}>REGRESSÃO · PERGUNTA EM ABERTO</div>
+    <div style={{ position: 'absolute', left: 250, top: 715, color: c.accent, fontFamily: mono, fontSize: 22, letterSpacing: '0.1em' }}>REGRESSÃO · TARGET DEFINIDO</div>
   </Frame>
 );
 
@@ -247,7 +247,7 @@ const S04Structure: Page = () => (
     <div style={{ position: 'absolute', left: 152, top: 116 }}>
       <Eyebrow>03 · ESTRUTURA</Eyebrow>
       <Heading>Nem toda coluna é uma feature.</Heading>
-      <Subheading maxWidth={1240}>A inspeção separou campos numéricos de campos textuais/categóricos. A classificação ainda é preliminar.</Subheading>
+      <Subheading maxWidth={1240}>A inspeção separou campos numéricos de campos textuais/categóricos. A seleção para o experimento está documentada.</Subheading>
     </div>
     <div style={{ position: 'absolute', left: 176, top: 442, width: 370, minHeight: 280, boxSizing: 'border-box', border: `1px solid ${c.line}`, background: c.surface, padding: '24px 28px' }}>
       <div style={{ color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>3 · CATEGÓRICAS / TEXTUAIS</div>
@@ -274,7 +274,7 @@ const S04Structure: Page = () => (
     </div>
     <div style={{ position: 'absolute', left: 546, top: 582, width: 184, height: 1, background: c.line }} />
     <div style={{ position: 'absolute', left: 1150, top: 582, width: 45, height: 1, background: c.accent }} />
-    <div style={{ position: 'absolute', left: 176, top: 812, color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.08em' }}>CLASSIFICAÇÃO PRELIMINAR · USO NO MODELO: AINDA NÃO DECIDIDO</div>
+    <div style={{ position: 'absolute', left: 176, top: 812, color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.08em' }}>SELEÇÃO DOCUMENTADA · 4 FEATURES · 1 TARGET · 3 EXCLUSÕES</div>
   </Frame>
 );
 
@@ -291,7 +291,7 @@ const S05Quality: Page = () => (
       <div style={{ width: 1, background: c.line }} />
       <QualityMetric value="0" label="LINHAS COMPLETAMENTE DUPLICADAS" detail="nenhum registro repetido na checagem" />
     </div>
-    <div style={{ position: 'absolute', left: 260, top: 768, color: c.muted, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>NENHUM REGISTRO FOI REMOVIDO · NENHUM TRATAMENTO FOI APLICADO</div>
+    <div style={{ position: 'absolute', left: 260, top: 768, color: c.muted, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>NENHUM REGISTRO FOI REMOVIDO · NÃO HOUVE TRATAMENTO DE NULOS OU DUPLICATAS</div>
   </Frame>
 );
 
@@ -300,10 +300,10 @@ const S06State: Page = () => (
   <Frame stage="state">
     <div style={{ position: 'absolute', left: 152, top: 112 }}>
       <Eyebrow>05 · ESTADO ATUAL</Eyebrow>
-      <Heading>A inspeção terminou.<br />A modelagem ainda não começou.</Heading>
+      <Heading>A inspeção terminou.<br />O protocolo está definido.</Heading>
     </div>
     <div style={{ position: 'absolute', left: 176, top: 410, width: 690, minHeight: 324, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}0d`, padding: '24px 30px' }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>VERIFICADO NO NOTEBOOK</div>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>INSPEÇÃO INICIAL</div>
       <div style={{ marginTop: 18 }}>
         <StateLine>carregamento do arquivo</StateLine>
         <StateLine>head() · shape · info()</StateLine>
@@ -311,26 +311,164 @@ const S06State: Page = () => (
         <StateLine>valores ausentes e duplicatas</StateLine>
       </div>
     </div>
-    <div style={{ position: 'absolute', left: 1000, top: 410, width: 740, minHeight: 324, boxSizing: 'border-box', border: `1px solid ${c.attention}`, background: `${c.attention}08`, padding: '24px 30px' }}>
-      <div style={{ color: c.attention, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>AINDA NÃO REALIZADO</div>
+    <div style={{ position: 'absolute', left: 1000, top: 410, width: 740, minHeight: 324, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}0d`, padding: '24px 30px' }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>ETAPA 02 · ENTREGAS</div>
       <div style={{ marginTop: 18 }}>
-        <StateLine color={c.attention}>variável-alvo</StateLine>
-        <StateLine color={c.attention}>EDA · correlações · outliers</StateLine>
-        <StateLine color={c.attention}>treino · teste · pré-processamento</StateLine>
-        <StateLine color={c.attention}>Linear Múltipla · Random Forest · SVR</StateLine>
+        <StateLine color={c.accent}>target · Yearly Amount Spent</StateLine>
+        <StateLine color={c.accent}>features · 4 variáveis numéricas</StateLine>
+        <StateLine color={c.accent}>divisão · 400 treino · 100 teste</StateLine>
+        <StateLine color={c.accent}>escala · StandardScaler no treino</StateLine>
       </div>
     </div>
-    <div style={{ position: 'absolute', left: 176, top: 804, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>PRÓXIMA DECISÃO · DEFINIR A VARIÁVEL-ALVO</div>
+    <div style={{ position: 'absolute', left: 176, top: 838, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>PENDENTE · EDA E MODELAGEM</div>
+  </Frame>
+);
+
+// ── SLIDE 07 — Target ─────────────────────────────────────────────────────
+const S07Target: Page = () => (
+  <Frame stage="target">
+    <div style={{ position: 'absolute', left: 152, top: 120 }}>
+      <Eyebrow>06 · DEFININDO O PROBLEMA</Eyebrow>
+      <Heading>Features entram. Um target sai.</Heading>
+      <Subheading maxWidth={1320}>A pergunta agora é explícita: usar sinais de uso e relacionamento para estimar um valor contínuo.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 400, display: 'flex', alignItems: 'center', gap: 34 }}>
+      <div style={{ width: 570, height: 286, boxSizing: 'border-box', border: `1px solid ${c.line}`, background: c.surface, padding: '22px 28px' }}>
+        <div style={{ color: c.soft, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>FEATURES (X) · 4 SINAIS</div>
+        <div style={{ marginTop: 16 }}>
+          <FieldLine>Avg. Session Length</FieldLine>
+          <FieldLine>Time on App</FieldLine>
+          <FieldLine>Time on Website</FieldLine>
+          <FieldLine>Length of Membership</FieldLine>
+        </div>
+      </div>
+      <div style={{ width: 150, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Connector width={92} />
+        <span style={{ color: c.accent, fontFamily: display, fontSize: 46, lineHeight: 1 }}>→</span>
+      </div>
+      <div style={{ width: 500, height: 220, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '28px 32px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>VARIÁVEL-ALVO (y)</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 32, fontWeight: 800 }}>Yearly Amount Spent</div>
+        <div style={{ marginTop: 12, color: c.muted, fontSize: 22 }}>variável dependente · valor contínuo</div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 764, color: c.accent, fontFamily: mono, fontSize: 22, letterSpacing: '0.1em' }}>PROBLEMA DE REGRESSÃO · VALOR ANUAL A ESTIMAR</div>
+  </Frame>
+);
+
+// ── SLIDE 08 — Split ──────────────────────────────────────────────────────
+const S08Split: Page = () => (
+  <Frame stage="split">
+    <div style={{ position: 'absolute', left: 152, top: 120 }}>
+      <Eyebrow>07 · DIVISÃO DOS DADOS</Eyebrow>
+      <Heading>Uma divisão. Três modelos.</Heading>
+      <Subheading maxWidth={1320}>Os 500 registros passam por uma única separação reproduzível antes da modelagem futura.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 416, display: 'flex', alignItems: 'center', gap: 44 }}>
+      <div style={{ width: 350, height: 154, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '24px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>DATASET</div>
+        <div style={{ marginTop: 12, color: 'var(--osd-text)', fontFamily: display, fontSize: 58, lineHeight: 0.95, letterSpacing: '-0.05em' }}>500</div>
+        <div style={{ marginTop: 8, color: c.muted, fontFamily: mono, fontSize: 18, letterSpacing: '0.1em' }}>REGISTROS</div>
+      </div>
+      <div style={{ position: 'relative', width: 92, height: 250 }}>
+        <div style={{ position: 'absolute', left: 18, top: 124, width: 1, height: 2, background: c.line }} />
+        <div style={{ position: 'absolute', left: 18, top: 62, width: 1, height: 126, background: c.line }} />
+        <div style={{ position: 'absolute', left: 18, top: 62, width: 74, height: 1, background: c.accent }} />
+        <div style={{ position: 'absolute', left: 18, top: 187, width: 74, height: 1, background: c.soft }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        <div style={{ width: 660, height: 104, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: c.surface, padding: '18px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>80% · TREINO</div>
+            <div style={{ marginTop: 8, color: 'var(--osd-text)', fontSize: 26 }}>aprende padrões</div>
+          </div>
+          <div style={{ color: c.accent, fontFamily: display, fontSize: 54, fontWeight: 800 }}>400</div>
+        </div>
+        <div style={{ width: 660, height: 104, boxSizing: 'border-box', border: `1px solid ${c.soft}`, background: c.surface, padding: '18px 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ color: c.soft, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>20% · TESTE</div>
+            <div style={{ marginTop: 8, color: 'var(--osd-text)', fontSize: 26 }}>avalia generalização</div>
+          </div>
+          <div style={{ color: c.soft, fontFamily: display, fontSize: 54, fontWeight: 800 }}>100</div>
+        </div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 770, display: 'flex', alignItems: 'center', gap: 26, color: c.muted, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>
+      <span style={{ color: c.accent }}>random_state = 42</span>
+      <span style={{ width: 1, height: 22, background: c.line }} />
+      <span>mesmos registros para Linear · Forest · SVR</span>
+    </div>
+  </Frame>
+);
+
+// ── SLIDE 09 — Scaling ────────────────────────────────────────────────────
+const S09Scaling: Page = () => (
+  <Frame stage="scaling">
+    <div style={{ position: 'absolute', left: 152, top: 120 }}>
+      <Eyebrow>08 · ESCALA E VAZAMENTO</Eyebrow>
+      <Heading>A escala pertence ao treino.</Heading>
+      <Subheading maxWidth={1320}>O StandardScaler aprende parâmetros em X_train e apenas transforma X_test.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 390, width: 1568 }}>
+      <div style={{ display: 'flex', alignItems: 'center', height: 120 }}>
+        <div style={{ width: 112, color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>TREINO</div>
+        <div style={{ width: 286, height: 82, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: c.surface, padding: '18px 22px' }}>
+          <div style={{ color: c.accent, fontFamily: mono, fontSize: 19 }}>X_train</div>
+          <div style={{ marginTop: 8, color: c.muted, fontSize: 21 }}>parâmetros aprendidos</div>
+        </div>
+        <div style={{ width: 330, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
+          <Connector width={75} />
+          <span style={{ color: c.accent, fontFamily: mono, fontSize: 18 }}>fit_transform()</span>
+        </div>
+        <div style={{ width: 330, height: 82, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '18px 22px' }}>
+          <div style={{ color: c.accent, fontFamily: mono, fontSize: 19 }}>X_train_scaled</div>
+          <div style={{ marginTop: 8, color: c.muted, fontSize: 21 }}>média ≈ 0 · desvio ≈ 1</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', height: 120 }}>
+        <div style={{ width: 112, color: c.soft, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>TESTE</div>
+        <div style={{ width: 286, height: 82, boxSizing: 'border-box', border: `1px solid ${c.soft}`, background: c.surface, padding: '18px 22px' }}>
+          <div style={{ color: c.soft, fontFamily: mono, fontSize: 19 }}>X_test</div>
+          <div style={{ marginTop: 8, color: c.muted, fontSize: 21 }}>nenhum ajuste novo</div>
+        </div>
+        <div style={{ width: 330, display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px' }}>
+          <Connector width={75} color={c.soft} />
+          <span style={{ color: c.soft, fontFamily: mono, fontSize: 18 }}>transform()</span>
+        </div>
+        <div style={{ width: 330, height: 82, boxSizing: 'border-box', border: `1px solid ${c.soft}`, background: c.surface, padding: '18px 22px' }}>
+          <div style={{ color: c.soft, fontFamily: mono, fontSize: 19 }}>X_test_scaled</div>
+          <div style={{ marginTop: 8, color: c.muted, fontSize: 21 }}>mesma escala do treino</div>
+        </div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 704, display: 'flex', alignItems: 'stretch', gap: 70 }}>
+      <div style={{ width: 410, borderTop: `1px solid ${c.accent}`, paddingTop: 18 }}>
+        <div style={{ color: c.accent, fontFamily: mono, fontSize: 21, letterSpacing: '0.12em' }}>SVR</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 24 }}>sensível à escala</div>
+      </div>
+      <div style={{ width: 410, borderTop: `1px solid ${c.line}`, paddingTop: 18 }}>
+        <div style={{ color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.12em' }}>RANDOM FOREST</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 24 }}>geralmente dispensa</div>
+      </div>
+      <div style={{ width: 410, borderTop: `1px solid ${c.line}`, paddingTop: 18 }}>
+        <div style={{ color: 'var(--osd-text)', fontFamily: mono, fontSize: 21, letterSpacing: '0.12em' }}>LINEAR</div>
+        <div style={{ marginTop: 10, color: c.muted, fontSize: 24 }}>capacidade equivalente</div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 840, color: c.accent, fontFamily: mono, fontSize: 21, letterSpacing: '0.09em' }}>SEM FIT NO TESTE · SEM VAZAMENTO DE DADOS</div>
   </Frame>
 );
 
 export const notes = [
   'Abra nomeando o projeto e o grupo. A capa apresenta a metáfora do oráculo como um sistema técnico: sinais entram, uma estimativa poderá sair. Ainda não existe modelo executado; o ponto de interrogação é deliberado.',
-  'A pergunta deste slide é a tensão central. O notebook confirma que o objetivo final é comparar regressões para prever uma variável contínua, mas também afirma que a variável-alvo ainda não foi definida. Não diga que Yearly Amount Spent já é o target.',
+  'Este slide introduz a pergunta do projeto. O notebook agora confirma que Yearly Amount Spent é o target: o valor gasto anualmente pelo cliente. Como a saída é numérica e contínua, o problema é de regressão. A definição do target não significa que algum modelo já tenha sido treinado.',
   'Mostre os números diretamente comprovados pelos outputs: 500 registros e 8 colunas. O arquivo foi carregado com pandas a partir de ../data/Ecommerce Customers e o README o descreve como CSV sem extensão. Este slide fala de dimensão, não de qualidade ou desempenho.',
-  'A tabela vem de df.dtypes e da classificação preliminar criada no notebook: cinco colunas float64 e três colunas str. Leia os nomes reais. Não chame todas as colunas de features ainda e não escolha Yearly Amount Spent como alvo antes da próxima etapa.',
-  'Os dois zeros são verificações específicas: zero valores ausentes em todas as colunas e zero linhas completamente duplicadas. Isso não prova ausência de outliers, consistência estatística ou adequação para modelagem. Nenhum tratamento foi executado nesta etapa.',
-  'Feche o primeiro ato com uma fronteira clara. A inspeção inicial terminou, mas target, EDA, pré-processamento, divisão treino/teste, modelos e métricas ainda não existem no notebook. Linear, Forest e SVR aparecem apenas como escopo futuro do briefing, nunca como resultado. A próxima versão do deck só poderá avançar quando o notebook sustentar cada afirmação.',
+  'A tabela vem de df.dtypes e da classificação preliminar criada no notebook: cinco colunas float64 e três colunas str. A Etapa 02 transforma essa inspeção em uma decisão explícita: quatro numéricas serão features, Yearly Amount Spent será o target e os três textos serão excluídos.',
+  'Os dois zeros são verificações específicas: zero valores ausentes em todas as colunas e zero linhas completamente duplicadas. Isso não prova ausência de outliers, consistência estatística ou adequação para modelagem. Nenhum registro foi removido e não houve tratamento de nulos ou duplicatas nesta etapa.',
+  'O painel azul resume a inspeção inicial: carregamento, estrutura, tipos, valores ausentes e duplicatas. O painel de entregas da Etapa 02 destaca o target, as quatro features, a divisão 400/100 e o StandardScaler ajustado no treino. A EDA completa ainda não foi realizada e modelos, métricas, resíduos e avaliação de overfitting continuam pendentes.',
+  'O target é a variável dependente y, o valor que queremos prever. As quatro features são variáveis independentes X ligadas a sessão, aplicativo, website e duração de relacionamento. Email, Address e Avatar não entram: são identificadores textuais ou não possuem significado preditivo justificado para este experimento. Por isso não aplicamos encoding categórico.',
+  'A divisão usa os 500 registros reais: 400 para treino e 100 para teste, equivalentes a 80% e 20%. random_state=42 fixa o sorteio para que Linear, Random Forest e SVR recebam os mesmos registros. Treino aprende padrões; teste permanece reservado para a avaliação futura de generalização.',
+  'O StandardScaler é preparado em duas operações. fit_transform aprende média e desvio apenas em X_train; transform aplica os mesmos parâmetros em X_test. SVR é sensível à escala, enquanto Random Forest geralmente não precisa dela e Regressão Linear sem regularização conserva capacidade preditiva equivalente em condições usuais. Em validação cruzada, o scaler deverá ficar dentro de um Pipeline em cada fold. Nenhuma métrica ou modelo foi calculado nesta etapa.',
 ] satisfies (string | undefined)[];
 
 export const meta: SlideMeta = {
@@ -339,4 +477,4 @@ export const meta: SlideMeta = {
   createdAt: '2026-10-05T01:04:16.943Z',
 };
 
-export default [S01Cover, S02Problem, S03Dataset, S04Structure, S05Quality, S06State] satisfies Page[];
+export default [S01Cover, S02Problem, S03Dataset, S04Structure, S05Quality, S06State, S07Target, S08Split, S09Scaling] satisfies Page[];
