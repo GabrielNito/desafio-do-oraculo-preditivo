@@ -28,11 +28,11 @@ export const transition: SlideTransition = {
   enter: { duration: 180, keyframes: [{ opacity: 0 }, { opacity: 1 }] },
 };
 
-const Footer = ({ glossary }: { glossary?: ReactNode }) => {
+const Footer = () => {
   const { current, total } = useSlidePageNumber();
-  return <div style={{ position: 'absolute', left: 150, right: 150, bottom: 38, borderTop: `1px solid ${c.line}`, paddingTop: 13, display: 'flex', alignItems: 'center', color: c.muted, fontSize: 16, letterSpacing: '0.04em' }}><span>Desafio do Oráculo Preditivo · Ecommerce Customers</span>{glossary && <span style={{ flex: 1, margin: '0 42px', color: c.accent, textAlign: 'center', fontWeight: 700 }}>{glossary}</span>}<span style={{ marginLeft: 'auto' }}>{current} / {total}</span></div>;
+  return <div style={{ position: 'absolute', left: 150, right: 150, bottom: 38, borderTop: `1px solid ${c.line}`, paddingTop: 13, display: 'flex', justifyContent: 'space-between', color: c.muted, fontSize: 16, letterSpacing: '0.04em' }}><span>Desafio do Oráculo Preditivo · Ecommerce Customers</span><span>{current} / {total}</span></div>;
 };
-const Frame = ({ children, glossary }: { children: ReactNode; glossary?: ReactNode }) => <section style={root}><div style={{ position: 'relative', zIndex: 1 }}>{children}</div><Footer glossary={glossary} /></section>;
+const Frame = ({ children }: { children: ReactNode }) => <section style={root}><div style={{ position: 'relative', zIndex: 1 }}>{children}</div><Footer /></section>;
 const Header = ({ number, title, children, width = 1420 }: { number: string; title: ReactNode; children?: ReactNode; width?: number }) => (
   <div style={{ position: 'absolute', left: 150, top: 98, width }}>
     <div style={{ color: c.accent, fontSize: 18, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{number}</div>
@@ -70,9 +70,10 @@ const S03Data: Page = () => <Frame>
   <Header number="02 · Base e seleção de colunas" title="O que existe no arquivo">O arquivo Ecommerce Customers contém 500 registros e 8 colunas. A inspeção inicial separou dados úteis para previsão de identificadores textuais.</Header>
   <div style={{ position: 'absolute', left: 150, top: 405, display: 'flex', gap: 150 }}><Metric value="500" label="registros" detail="uma linha por cliente" /><Metric value="8" label="colunas" detail="5 numéricas e 3 textuais" /><Metric value="4" label="features" detail="mais 1 variável-alvo" /></div>
   <Rule top={625} />
-  <div style={{ position: 'absolute', left: 150, top: 670, width: 680 }}><TableHead>Colunas que entram no modelo</TableHead><p style={{ margin: '20px 0 0', fontSize: 25, lineHeight: 1.45 }}>Avg. Session Length, Time on App, Time on Website e Length of Membership</p></div>
-  <div style={{ position: 'absolute', left: 970, top: 670, width: 620 }}><TableHead>Colunas que ficam fora</TableHead><p style={{ margin: '20px 0 0', fontSize: 25, lineHeight: 1.45 }}>Email, Address e Avatar são textos sem papel preditivo justificável neste experimento.</p></div>
-  <Reading top={835}>Não havia valores ausentes nem linhas completamente duplicadas. Por isso, a preparação não precisou imputar ou remover registros nessa etapa.</Reading>
+  <div style={{ position: 'absolute', left: 150, top: 665, width: 640 }}><TableHead>Colunas que entram no modelo</TableHead><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 42px', marginTop: 22, fontSize: 23 }}><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Avg. Session Length<div style={{ color: c.muted, marginTop: 5 }}>duração média da sessão</div></div><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Time on App<div style={{ color: c.muted, marginTop: 5 }}>tempo no aplicativo</div></div><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Time on Website<div style={{ color: c.muted, marginTop: 5 }}>tempo no site</div></div><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Length of Membership<div style={{ color: c.muted, marginTop: 5 }}>tempo de relacionamento</div></div></div></div>
+  <div style={{ position: 'absolute', left: 870, top: 665, width: 1, height: 175, background: c.line }} />
+  <div style={{ position: 'absolute', left: 970, top: 665, width: 620 }}><TableHead>Colunas que ficam fora</TableHead><div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 42px', marginTop: 22, fontSize: 23 }}><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Email<div style={{ color: c.muted, marginTop: 5 }}>identificador textual</div></div><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Address<div style={{ color: c.muted, marginTop: 5 }}>identificador textual</div></div><div style={{ borderTop: `1px solid ${c.line}`, paddingTop: 10 }}>Avatar<div style={{ color: c.muted, marginTop: 5 }}>identificador textual</div></div></div></div>
+  <Reading top={925}>Não havia valores ausentes nem linhas completamente duplicadas. Por isso, a preparação não precisou imputar ou remover registros nessa etapa.</Reading>
 </Frame>;
 
 const S04Protocol: Page = () => <Frame>
@@ -99,11 +100,11 @@ const S06Features: Page = () => <Frame>
   <Reading>Length of Membership é a feature com maior associação linear com o gasto anual. Tempo no website tem associação praticamente nula nesta amostra.</Reading>
 </Frame>;
 
-const S07Correlations: Page = () => <Frame glossary={<><Acronym>VIF</Acronym> = indicador de redundância entre as features</>}>
+const S07Correlations: Page = () => <Frame>
   <Header number="06 · Análise exploratória" title="Correlação entre as variáveis">O heatmap usa correlação de Pearson no conjunto de treino. Além do target, verificamos se as features carregam informação muito parecida entre si.</Header>
   <img src={correlationHeatmapImage} alt="Heatmap de correlação das features e do target no treinamento" style={{ position: 'absolute', left: 150, top: 355, width: 925, height: 455, objectFit: 'contain' }} />
-  <div style={{ position: 'absolute', left: 1210, top: 405, width: 440 }}><Metric value="0,079" label="maior |r| entre features" detail="correlação baixa entre os preditores" width={440} /><Rule top={230} left={0} width={440} /><div style={{ marginTop: 120 }}><Metric value="1,002–1,010" label={<>faixa de <Acronym>VIF</Acronym></>} detail="sem evidência relevante de multicolinearidade" width={440} /></div></div>
-  <Reading>Membership se destaca na relação com o target, mas a análise permanece associativa: esses números não demonstram causalidade.</Reading>
+  <div style={{ position: 'absolute', left: 1210, top: 405, width: 440 }}><Metric value="0,079" label="maior |r| entre features" detail="correlação baixa entre os preditores" width={440} /><Rule top={230} left={0} width={440} /><div style={{ marginTop: 120 }}><Metric value="1,002–1,010" label={<>faixa de <Acronym>VIF</Acronym></>} detail="mede redundância entre as features" width={440} /></div></div>
+  <Reading top={870} width={900}>Membership se destaca na relação com o target, mas a análise permanece associativa: esses números não demonstram causalidade.</Reading>
 </Frame>;
 
 const S08Outliers: Page = () => <Frame>
@@ -114,7 +115,7 @@ const S08Outliers: Page = () => <Frame>
 </Frame>;
 
 const S09Models: Page = () => <Frame>
-  <Header number="08 · Modelagem" title="Modelos comparados">Todos os modelos partem das mesmas observações. Cada um responde à pergunta de forma diferente e será avaliado com as mesmas métricas.</Header>
+  <Header number="08 · Modelagem" title="Modelos comparados">Todos os modelos usam as mesmas observações e métricas. <Acronym>SVR</Acronym> significa Support Vector Regression. <Acronym>RBF</Acronym> permite uma relação não linear.</Header>
   <div style={{ position: 'absolute', left: 150, top: 400, width: 1540 }}>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', paddingBottom: 17, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>Função na comparação</TableHead><TableHead>Configuração</TableHead></div>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Dummy</span><span style={{ color: c.muted }}>baseline</span><span style={{ color: c.muted }}>prevê a média do treino</span></div>
@@ -123,7 +124,7 @@ const S09Models: Page = () => <Frame>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span><Acronym>SVR</Acronym> Linear</span><span style={{ color: c.muted }}>margem linear</span><span style={{ color: c.muted }}><Code>StandardScaler</Code> + <Code>kernel='linear'</Code></span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span><Acronym>SVR</Acronym> <Acronym>RBF</Acronym></span><span style={{ color: c.muted }}>margem não linear</span><span style={{ color: c.muted }}><Code>StandardScaler</Code> + <Code>kernel='rbf'</Code></span></div>
   </div>
-  <Reading>O Dummy mostra o patamar mínimo. <Acronym>SVR</Acronym> significa Support Vector Regression. A versão Linear ajusta uma relação reta; <Acronym>RBF</Acronym> permite uma curva. A Regressão Linear Múltipla é a referência interpretável.</Reading>
+  <Reading top={870}>O Dummy mostra o patamar mínimo. A Regressão Linear Múltipla continua como referência interpretável.</Reading>
 </Frame>;
 
 const S10Validation: Page = () => <Frame>
@@ -135,8 +136,8 @@ const S10Validation: Page = () => <Frame>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>SVR Linear</span><span>0,9848</span><span>9,86</span><span>0,0006</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>SVR RBF</span><span>0,9212</span><span>22,02</span><span>0,0574</span></div>
   </div>
-  <div style={{ position: 'absolute', left: 1370, top: 400, width: 280 }}><TableHead>Busca no treino</TableHead><p style={{ margin: '20px 0 0', fontSize: 24, lineHeight: 1.42 }}>GridSearchCV testou 4 configurações do Forest, 2 do SVR Linear e 4 do SVR RBF.</p><p style={{ margin: '26px 0 0', color: c.muted, fontSize: 22, lineHeight: 1.4 }}>A busca manteve as configurações iniciais. O teste continuou reservado.</p></div>
-  <Reading>A Regressão Linear Múltipla (<Acronym>RLM</Acronym>) e o <Acronym>SVR</Acronym> Linear têm desempenho e estabilidade muito próximos na validação interna. Essa etapa apoia a seleção, mas não é uma validação externa.</Reading>
+  <div style={{ position: 'absolute', left: 1370, top: 400, width: 280 }}><TableHead>Busca no treino</TableHead><p style={{ margin: '20px 0 0', fontSize: 24, lineHeight: 1.42 }}><Code>GridSearchCV</Code> testou 4 configurações do Forest, 2 do SVR Linear e 4 do SVR RBF.</p><p style={{ margin: '26px 0 0', color: c.muted, fontSize: 22, lineHeight: 1.4 }}>A busca manteve as configurações iniciais. O teste continuou reservado.</p></div>
+  <Reading top={860} width={1150}><Acronym>R²</Acronym> indica quanto da variação do gasto o modelo explica. <Acronym>RMSE</Acronym> dá mais peso aos erros grandes. A Regressão Linear Múltipla (<Acronym>RLM</Acronym>) e o <Acronym>SVR</Acronym> Linear ficam muito próximos. Essa etapa ainda não é uma validação externa.</Reading>
 </Frame>;
 
 const S11Test: Page = () => <Frame>
