@@ -28,11 +28,11 @@ export const transition: SlideTransition = {
   enter: { duration: 180, keyframes: [{ opacity: 0 }, { opacity: 1 }] },
 };
 
-const Footer = () => {
+const Footer = ({ glossary }: { glossary?: ReactNode }) => {
   const { current, total } = useSlidePageNumber();
-  return <div style={{ position: 'absolute', left: 150, right: 150, bottom: 38, borderTop: `1px solid ${c.line}`, paddingTop: 13, display: 'flex', justifyContent: 'space-between', color: c.muted, fontSize: 16, letterSpacing: '0.04em' }}><span>Desafio do Oráculo Preditivo · Ecommerce Customers</span><span>{current} / {total}</span></div>;
+  return <div style={{ position: 'absolute', left: 150, right: 150, bottom: 38, borderTop: `1px solid ${c.line}`, paddingTop: 13, display: 'flex', alignItems: 'center', color: c.muted, fontSize: 16, letterSpacing: '0.04em' }}><span>Desafio do Oráculo Preditivo · Ecommerce Customers</span>{glossary && <span style={{ flex: 1, margin: '0 42px', color: c.accent, textAlign: 'center', fontWeight: 700 }}>{glossary}</span>}<span style={{ marginLeft: 'auto' }}>{current} / {total}</span></div>;
 };
-const Frame = ({ children }: { children: ReactNode }) => <section style={root}><div style={{ position: 'relative', zIndex: 1 }}>{children}</div><Footer /></section>;
+const Frame = ({ children, glossary }: { children: ReactNode; glossary?: ReactNode }) => <section style={root}><div style={{ position: 'relative', zIndex: 1 }}>{children}</div><Footer glossary={glossary} /></section>;
 const Header = ({ number, title, children, width = 1420 }: { number: string; title: ReactNode; children?: ReactNode; width?: number }) => (
   <div style={{ position: 'absolute', left: 150, top: 98, width }}>
     <div style={{ color: c.accent, fontSize: 18, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{number}</div>
@@ -40,9 +40,11 @@ const Header = ({ number, title, children, width = 1420 }: { number: string; tit
     {children && <div style={{ marginTop: 18, maxWidth: 1240, color: c.muted, fontSize: 28, lineHeight: 1.4 }}>{children}</div>}
   </div>
 );
-const Reading = ({ children, top = 836, width = 1540 }: { children: ReactNode; top?: number; width?: number }) => <div style={{ position: 'absolute', left: 150, top, width, color: c.ink, fontSize: 23, lineHeight: 1.36 }}><span style={{ color: c.accent, fontWeight: 700 }}>Leitura do experimento. </span>{children}</div>;
+const Acronym = ({ children }: { children: ReactNode }) => <span style={{ color: c.accent, fontWeight: 700, letterSpacing: '0.035em' }}>{children}</span>;
+const Code = ({ children }: { children: ReactNode }) => <code style={{ padding: '2px 7px', border: '1px solid #D9E4E7', borderRadius: 3, background: c.pale, color: c.ink, fontFamily: 'Consolas, "Courier New", monospace', fontSize: '0.88em', whiteSpace: 'nowrap' }}>{children}</code>;
+const Reading = ({ children, top = 836, width = 1540 }: { children: ReactNode; top?: number; width?: number }) => <div style={{ position: 'absolute', left: 150, top, width, color: c.ink, fontSize: 23, lineHeight: 1.36 }}>{children}</div>;
 const Rule = ({ top, left = 150, width = 1540 }: { top: number; left?: number; width?: number }) => <div style={{ position: 'absolute', left, top, width, height: 1, background: c.line }} />;
-const Metric = ({ value, label, detail, width = 300 }: { value: string; label: string; detail?: string; width?: number }) => <div style={{ width }}><div style={{ color: c.accent, fontSize: 74, lineHeight: 0.95, letterSpacing: '-0.06em', fontWeight: 700 }}>{value}</div><div style={{ marginTop: 12, fontSize: 20, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{label}</div>{detail && <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.32 }}>{detail}</div>}</div>;
+const Metric = ({ value, label, detail, width = 300 }: { value: string; label: ReactNode; detail?: string; width?: number }) => <div style={{ width }}><div style={{ color: c.accent, fontSize: 74, lineHeight: 0.95, letterSpacing: '-0.06em', fontWeight: 700 }}>{value}</div><div style={{ marginTop: 12, fontSize: 20, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{label}</div>{detail && <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.32 }}>{detail}</div>}</div>;
 const Field = ({ label, detail }: { label: string; detail: string }) => <div style={{ padding: '17px 0', borderBottom: `1px solid ${c.line}`, display: 'flex', justifyContent: 'space-between', gap: 24, fontSize: 24 }}><span>{label}</span><span style={{ color: c.muted, textAlign: 'right' }}>{detail}</span></div>;
 const TableHead = ({ children }: { children: ReactNode }) => <div style={{ color: c.accent, fontSize: 18, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{children}</div>;
 
@@ -76,9 +78,9 @@ const S03Data: Page = () => <Frame>
 const S04Protocol: Page = () => <Frame>
   <Header number="03 · Preparação e protocolo" title="Como evitamos comparar modelos de forma injusta">A base foi dividida antes do treinamento. O mesmo conjunto de treino e o mesmo conjunto de teste foram usados por todos os modelos.</Header>
   <div style={{ position: 'absolute', left: 150, top: 420, width: 1540, display: 'flex', gap: 82 }}>
-    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>1</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Divisão 80% / 20%</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>400 registros para treino e 100 para teste, com random_state = 42.</p></div>
-    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>2</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Escala aprendida no treino</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>O StandardScaler aplica fit_transform() em X_train e apenas transform() em X_test.</p></div>
-    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>3</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Teste preservado</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>O Pipeline mantém o scaler dentro de cada dobra. A busca usa o treino; o teste compara os resultados finais.</p></div>
+    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>1</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Divisão 80% / 20%</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>400 registros para treino e 100 para teste, com <Code>random_state = 42</Code>.</p></div>
+    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>2</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Escala aprendida no treino</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>O <Code>StandardScaler</Code> aplica <Code>fit_transform()</Code> em <Code>X_train</Code> e apenas <Code>transform()</Code> em <Code>X_test</Code>.</p></div>
+    <div style={{ width: 430 }}><div style={{ color: c.accent, fontSize: 54, fontWeight: 700 }}>3</div><h2 style={{ margin: '18px 0 0', fontSize: 31 }}>Teste preservado</h2><p style={{ margin: '14px 0 0', color: c.muted, fontSize: 24, lineHeight: 1.4 }}>O <Code>Pipeline</Code> mantém o scaler dentro de cada dobra. A busca usa o treino; o teste compara os resultados finais.</p></div>
   </div>
   <Reading>Esse protocolo evita vazamento de dados e permite atribuir diferenças de desempenho ao modelo, não a uma divisão diferente da base.</Reading>
 </Frame>;
@@ -97,10 +99,10 @@ const S06Features: Page = () => <Frame>
   <Reading>Length of Membership é a feature com maior associação linear com o gasto anual. Tempo no website tem associação praticamente nula nesta amostra.</Reading>
 </Frame>;
 
-const S07Correlations: Page = () => <Frame>
+const S07Correlations: Page = () => <Frame glossary={<><Acronym>VIF</Acronym> = indicador de redundância entre as features</>}>
   <Header number="06 · Análise exploratória" title="Correlação entre as variáveis">O heatmap usa correlação de Pearson no conjunto de treino. Além do target, verificamos se as features carregam informação muito parecida entre si.</Header>
   <img src={correlationHeatmapImage} alt="Heatmap de correlação das features e do target no treinamento" style={{ position: 'absolute', left: 150, top: 355, width: 925, height: 455, objectFit: 'contain' }} />
-  <div style={{ position: 'absolute', left: 1210, top: 405, width: 440 }}><Metric value="0,079" label="maior |r| entre features" detail="correlação baixa entre os preditores" width={440} /><Rule top={230} left={0} width={440} /><div style={{ marginTop: 120 }}><Metric value="1,002–1,010" label="faixa de VIF" detail="sem evidência relevante de multicolinearidade" width={440} /></div></div>
+  <div style={{ position: 'absolute', left: 1210, top: 405, width: 440 }}><Metric value="0,079" label="maior |r| entre features" detail="correlação baixa entre os preditores" width={440} /><Rule top={230} left={0} width={440} /><div style={{ marginTop: 120 }}><Metric value="1,002–1,010" label={<>faixa de <Acronym>VIF</Acronym></>} detail="sem evidência relevante de multicolinearidade" width={440} /></div></div>
   <Reading>Membership se destaca na relação com o target, mas a análise permanece associativa: esses números não demonstram causalidade.</Reading>
 </Frame>;
 
@@ -116,17 +118,17 @@ const S09Models: Page = () => <Frame>
   <div style={{ position: 'absolute', left: 150, top: 400, width: 1540 }}>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', paddingBottom: 17, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>Função na comparação</TableHead><TableHead>Configuração</TableHead></div>
     <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Dummy</span><span style={{ color: c.muted }}>baseline</span><span style={{ color: c.muted }}>prevê a média do treino</span></div>
-    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Regressão Linear Múltipla</span><span style={{ color: c.muted }}>referência interpretável</span><span style={{ color: c.muted }}>LinearRegression + StandardScaler</span></div>
-    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Random Forest</span><span style={{ color: c.muted }}>ensemble de árvores</span><span style={{ color: c.muted }}>100 árvores · random_state = 42</span></div>
-    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>SVR Linear</span><span style={{ color: c.muted }}>margem linear</span><span style={{ color: c.muted }}>StandardScaler + kernel linear</span></div>
-    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>SVR RBF</span><span style={{ color: c.muted }}>margem não linear</span><span style={{ color: c.muted }}>StandardScaler + kernel rbf</span></div>
+    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Regressão Linear Múltipla</span><span style={{ color: c.muted }}>referência interpretável</span><span style={{ color: c.muted }}><Code>LinearRegression</Code> + <Code>StandardScaler</Code></span></div>
+    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Random Forest</span><span style={{ color: c.muted }}>ensemble de árvores</span><span style={{ color: c.muted }}>100 árvores · <Code>random_state = 42</Code></span></div>
+    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span><Acronym>SVR</Acronym> Linear</span><span style={{ color: c.muted }}>margem linear</span><span style={{ color: c.muted }}><Code>StandardScaler</Code> + <Code>kernel='linear'</Code></span></div>
+    <div style={{ display: 'grid', gridTemplateColumns: '340px 460px 1fr', padding: '22px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span><Acronym>SVR</Acronym> <Acronym>RBF</Acronym></span><span style={{ color: c.muted }}>margem não linear</span><span style={{ color: c.muted }}><Code>StandardScaler</Code> + <Code>kernel='rbf'</Code></span></div>
   </div>
-  <Reading>O Dummy mostra o patamar mínimo. A RLM prioriza interpretação; Random Forest e SVR verificam se relações mais flexíveis melhoram a previsão.</Reading>
+  <Reading>O Dummy mostra o patamar mínimo. <Acronym>SVR</Acronym> significa Support Vector Regression. A versão Linear ajusta uma relação reta; <Acronym>RBF</Acronym> permite uma curva. A Regressão Linear Múltipla é a referência interpretável.</Reading>
 </Frame>;
 
 const S10Validation: Page = () => <Frame>
   <Header number="09 · Seleção dentro do treino" title="Validação cruzada e busca de hiperparâmetros">Usamos 5 folds nas 400 observações de treino. Em cada dobra, 320 registros treinam e 80 validam.</Header>
-  <div style={{ position: 'absolute', left: 150, top: 395, width: 1120 }}><div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', paddingBottom: 15, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>R² médio</TableHead><TableHead>RMSE médio</TableHead><TableHead>Gap treino–val.</TableHead></div>
+  <div style={{ position: 'absolute', left: 150, top: 395, width: 1120 }}><div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', paddingBottom: 15, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>R² médio</TableHead><TableHead><Acronym>RMSE</Acronym> médio</TableHead><TableHead>Gap treino–val.</TableHead></div>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>Dummy</span><span>−0,0166</span><span>81,04</span><span>0,0166</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>Regressão Linear Múltipla</span><span>0,9848</span><span>9,88</span><span>0,0007</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>Random Forest</span><span>0,9381</span><span>19,92</span><span>0,0527</span></div>
@@ -134,43 +136,43 @@ const S10Validation: Page = () => <Frame>
     <div style={{ display: 'grid', gridTemplateColumns: '420px 210px 250px 1fr', padding: '18px 0', borderBottom: `1px solid ${c.line}`, fontSize: 23 }}><span>SVR RBF</span><span>0,9212</span><span>22,02</span><span>0,0574</span></div>
   </div>
   <div style={{ position: 'absolute', left: 1370, top: 400, width: 280 }}><TableHead>Busca no treino</TableHead><p style={{ margin: '20px 0 0', fontSize: 24, lineHeight: 1.42 }}>GridSearchCV testou 4 configurações do Forest, 2 do SVR Linear e 4 do SVR RBF.</p><p style={{ margin: '26px 0 0', color: c.muted, fontSize: 22, lineHeight: 1.4 }}>A busca manteve as configurações iniciais. O teste continuou reservado.</p></div>
-  <Reading>RLM e SVR Linear têm desempenho e estabilidade muito próximos na validação interna. Essa etapa apoia a seleção, mas não é uma validação externa.</Reading>
+  <Reading>A Regressão Linear Múltipla (<Acronym>RLM</Acronym>) e o <Acronym>SVR</Acronym> Linear têm desempenho e estabilidade muito próximos na validação interna. Essa etapa apoia a seleção, mas não é uma validação externa.</Reading>
 </Frame>;
 
 const S11Test: Page = () => <Frame>
   <Header number="10 · Teste reservado" title="Resultados nas 100 observações de teste">O conjunto de teste ficou fora da busca de hiperparâmetros. Ele oferece uma comparação final única entre as alternativas treinadas.</Header>
-  <div style={{ position: 'absolute', left: 150, top: 385, width: 1540 }}><div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', paddingBottom: 15, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>R²</TableHead><TableHead>MAE</TableHead><TableHead>MAPE</TableHead><TableHead>RMSE</TableHead></div>
+  <div style={{ position: 'absolute', left: 150, top: 385, width: 1540 }}><div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', paddingBottom: 15, borderBottom: `1px solid ${c.accent}` }}><TableHead>Modelo</TableHead><TableHead>R²</TableHead><TableHead><Acronym>MAE</Acronym></TableHead><TableHead><Acronym>MAPE</Acronym></TableHead><TableHead><Acronym>RMSE</Acronym></TableHead></div>
     <div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', padding: '21px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Dummy</span><span>−0,0362</span><span>54,91</span><span>12,35%</span><span>71,63</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', padding: '21px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Regressão Linear Múltipla</span><span>0,9778</span><span>8,56</span><span>1,79%</span><span>10,48</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', padding: '21px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>Random Forest</span><span>0,9336</span><span>13,65</span><span>2,99%</span><span>18,13</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', padding: '21px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25, color: c.warm }}><span>SVR Linear</span><span>0,9780</span><span>8,53</span><span>1,79%</span><span>10,43</span></div>
     <div style={{ display: 'grid', gridTemplateColumns: '480px 190px 210px 190px 1fr', padding: '21px 0', borderBottom: `1px solid ${c.line}`, fontSize: 25 }}><span>SVR RBF</span><span>0,9613</span><span>10,19</span><span>2,22%</span><span>13,85</span></div>
   </div>
-  <Reading>O SVR Linear teve o menor RMSE, 10,43. A RLM ficou a 0,05 unidade de distância, com RMSE de 10,48; a diferença prática é muito pequena.</Reading>
+  <Reading><Acronym>MAE</Acronym> mostra o erro absoluto médio. <Acronym>MAPE</Acronym> mostra o erro percentual médio. <Acronym>RMSE</Acronym> dá mais peso aos erros grandes. O <Acronym>SVR</Acronym> Linear teve 10,43 e a <Acronym>RLM</Acronym>, 10,48.</Reading>
 </Frame>;
 
 const S12Predictions: Page = () => <Frame>
   <Header number="11 · Previsões" title="Valores reais e valores estimados">Cada ponto representa uma observação do teste. Quanto mais próximo da diagonal tracejada, menor o erro da previsão.</Header>
   <img src={realVsPredImage} alt="Valores reais versus preditos para os quatro modelos no conjunto de teste" style={{ position: 'absolute', left: 150, top: 350, width: 1540, height: 455, objectFit: 'contain' }} />
-  <Reading>RLM e SVR Linear se concentram mais perto da diagonal. O gráfico reforça a tabela de métricas, mas não substitui nova validação em outra base.</Reading>
+  <Reading><Acronym>RLM</Acronym> e <Acronym>SVR</Acronym> Linear se concentram mais perto da diagonal. O gráfico reforça a tabela de métricas, mas não substitui nova validação em outra base.</Reading>
 </Frame>;
 
 const S13Diagnostics: Page = () => <Frame>
   <Header number="12 · Diagnóstico" title="Resíduos da previsão">Resíduo é a diferença entre o valor real e o valor previsto. Os gráficos ajudam a procurar padrões de erro que as métricas resumidas não mostram.</Header>
   <img src={residualsImage} alt="Resíduos versus predições dos modelos no teste" style={{ position: 'absolute', left: 150, top: 360, width: 1060, height: 380, objectFit: 'contain' }} />
   <img src={residualDistributionImage} alt="Distribuição dos resíduos da regressão linear múltipla" style={{ position: 'absolute', left: 1260, top: 410, width: 420, height: 280, objectFit: 'contain' }} />
-  <Reading top={805}>Na RLM, os resíduos aparecem dos dois lados de zero e não formam um funil evidente. Isso não prova normalidade nem homocedasticidade.</Reading>
+  <Reading top={805}>Na Regressão Linear Múltipla (<Acronym>RLM</Acronym>), os resíduos aparecem dos dois lados de zero e não formam um funil evidente. Isso não prova normalidade nem homocedasticidade.</Reading>
 </Frame>;
 
 const S14Interpretation: Page = () => <Frame>
-  <Header number="13 · Interpretação" title="Quais variáveis carregam mais sinal">A RLM e o Random Forest apontam a mesma ordem geral: Length of Membership e Time on App aparecem primeiro.</Header>
+  <Header number="13 · Interpretação" title="Quais variáveis carregam mais sinal">A Regressão Linear Múltipla (<Acronym>RLM</Acronym>) e o Random Forest apontam a mesma ordem geral: Length of Membership e Time on App aparecem primeiro.</Header>
   <img src={featureImportancesImage} alt="Impacto relativo das features na RLM e importância MDI no Random Forest" style={{ position: 'absolute', left: 150, top: 355, width: 1050, height: 400, objectFit: 'contain' }} />
-  <div style={{ position: 'absolute', left: 1280, top: 410, width: 360 }}><TableHead>Leitura da RLM</TableHead><p style={{ margin: '20px 0 0', fontSize: 25, lineHeight: 1.42 }}>Uma unidade adicional de Membership se associa a +61,90 unidades no target, condicionada às demais features.</p><Rule top={268} left={0} width={360} /><p style={{ margin: '62px 0 0', color: c.muted, fontSize: 23, lineHeight: 1.4 }}>Importância e coeficientes descrevem associação no modelo; eles não demonstram causa e efeito.</p></div>
+  <div style={{ position: 'absolute', left: 1280, top: 410, width: 360 }}><TableHead>Leitura da <Acronym>RLM</Acronym></TableHead><p style={{ margin: '20px 0 0', fontSize: 25, lineHeight: 1.42 }}>Uma unidade adicional de Membership se associa a +61,90 unidades no target, condicionada às demais features.</p><Rule top={268} left={0} width={360} /><p style={{ margin: '62px 0 0', color: c.muted, fontSize: 23, lineHeight: 1.4 }}>Importância e coeficientes descrevem associação no modelo; eles não demonstram causa e efeito.</p></div>
   <Reading>Os dois métodos convergem na prioridade das variáveis. Essa concordância torna a interpretação mais consistente dentro desta base, mas não elimina as limitações do experimento.</Reading>
 </Frame>;
 
 const S15Conclusion: Page = () => <Frame>
-  <Header number="14 · Conclusão" title="Recomendação para este experimento">O SVR Linear venceu por centésimos. Recomendamos a Regressão Linear Múltipla porque praticamente empata em desempenho e explica a previsão de forma mais direta.</Header>
+  <Header number="14 · Conclusão" title="Recomendação para este experimento">O <Acronym>SVR</Acronym> Linear venceu por centésimos. Recomendamos a Regressão Linear Múltipla porque praticamente empata em desempenho e explica a previsão de forma mais direta.</Header>
   <div style={{ position: 'absolute', left: 150, top: 445, width: 660 }}><TableHead>Modelo recomendado</TableHead><div style={{ marginTop: 24, fontSize: 50, lineHeight: 1.08, fontWeight: 700 }}>Regressão Linear Múltipla</div><p style={{ margin: '28px 0 0', fontSize: 26, lineHeight: 1.42 }}>RMSE 10,48 no teste. Coeficientes legíveis para explicar a contribuição de cada feature.</p></div>
   <div style={{ position: 'absolute', left: 1000, top: 445, width: 640 }}><TableHead>Limites da conclusão</TableHead><div style={{ marginTop: 20, fontSize: 25, lineHeight: 1.55 }}><p style={{ margin: 0 }}>500 registros e uma única divisão treino–teste</p><p style={{ margin: '18px 0 0' }}>Busca de hiperparâmetros pequena</p><p style={{ margin: '18px 0 0' }}>Sem validação externa</p><p style={{ margin: '18px 0 0' }}>Não aprova uso em produção real</p></div></div>
   <Reading top={830}>A decisão favorece simplicidade e interpretação diante de uma diferença mínima nas métricas. O repositório reúne notebook, código e figuras para consulta.</Reading>
