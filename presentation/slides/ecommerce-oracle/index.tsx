@@ -28,6 +28,10 @@ const targetDistributionImage = new URL('./assets/eda-target-distribution.png', 
 const featureDistributionsImage = new URL('./assets/eda-feature-distributions.png', import.meta.url).href;
 const correlationHeatmapImage = new URL('./assets/eda-correlation-heatmap.png', import.meta.url).href;
 const outlierBoxplotsImage = new URL('./assets/eda-outlier-boxplots.png', import.meta.url).href;
+const realVsPredImage = new URL('./assets/model-real-vs-pred.png', import.meta.url).href;
+const residualsImage = new URL('./assets/model-residuals.png', import.meta.url).href;
+const residualDistributionImage = new URL('./assets/model-residual-distribution.png', import.meta.url).href;
+const featureImportancesImage = new URL('./assets/model-feature-importances.png', import.meta.url).href;
 const easeOut = 'cubic-bezier(0, 0, 0.2, 1)';
 const easeIn = 'cubic-bezier(0.4, 0, 1, 1)';
 
@@ -93,7 +97,7 @@ const Subheading = ({ children, maxWidth = 1100 }: { children: ReactNode; maxWid
   <p style={{ margin: '24px 0 0', maxWidth, color: c.muted, fontSize: 32, lineHeight: 1.42 }}>{children}</p>
 );
 
-type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state' | 'target' | 'split' | 'scaling' | 'eda-target' | 'eda-features' | 'eda-correlation' | 'eda-heatmap' | 'eda-outliers' | 'eda-summary';
+type Stage = 'cover' | 'problem' | 'dataset' | 'structure' | 'quality' | 'state' | 'target' | 'split' | 'scaling' | 'eda-target' | 'eda-features' | 'eda-correlation' | 'eda-heatmap' | 'eda-outliers' | 'eda-summary' | 'models' | 'cv' | 'test' | 'prediction' | 'diagnostics' | 'importance' | 'decision';
 type NodeStatus = 'done' | 'active' | 'pending' | 'future';
 
 const FlowNode = ({ label, status }: { label: string; status: NodeStatus }) => {
@@ -111,9 +115,15 @@ const RailConnector = ({ status }: { status: NodeStatus }) => (
 );
 
 const FlowRail = ({ stage }: { stage: Stage }) => {
+  const modelStages: Stage[] = ['models', 'cv', 'test', 'prediction', 'diagnostics', 'importance', 'decision'];
+  const predictionStages: Stage[] = ['prediction', 'diagnostics', 'importance', 'decision'];
+  const decisionStages: Stage[] = ['decision'];
   const client: NodeStatus = stage === 'cover' ? 'active' : 'done';
   const data: NodeStatus = stage === 'cover' || stage === 'problem' || stage === 'dataset' || stage === 'quality' || stage.startsWith('eda-') ? 'active' : 'done';
   const features: NodeStatus = stage === 'structure' || stage === 'target' ? 'active' : stage === 'problem' || stage === 'dataset' || stage === 'quality' ? 'pending' : 'done';
+  const models: NodeStatus = stage === 'models' ? 'active' : modelStages.includes(stage) ? 'done' : 'future';
+  const prediction: NodeStatus = stage === 'test' || stage === 'prediction' ? 'active' : predictionStages.includes(stage) ? 'done' : 'future';
+  const decision: NodeStatus = stage === 'decision' ? 'active' : decisionStages.includes(stage) ? 'done' : 'future';
   return (
     <div style={{ position: 'absolute', left: 128, bottom: 112, zIndex: 2 }}>
       <div style={{ marginBottom: 12, color: c.muted, fontFamily: mono, fontSize: 16, letterSpacing: '0.16em', textTransform: 'uppercase' }}>pipeline / estado atual</div>
@@ -124,11 +134,11 @@ const FlowRail = ({ stage }: { stage: Stage }) => {
         <RailConnector status={data} />
         <FlowNode label="FEATURES" status={features} />
         <RailConnector status={features} />
-        <FlowNode label="MODELOS" status="future" />
-        <RailConnector status="future" />
-        <FlowNode label="PREVISÃO" status="future" />
-        <RailConnector status="future" />
-        <FlowNode label="DECISÃO" status="future" />
+        <FlowNode label="MODELOS" status={models} />
+        <RailConnector status={models} />
+        <FlowNode label="PREVISÃO" status={prediction} />
+        <RailConnector status={prediction} />
+        <FlowNode label="DECISÃO" status={decision} />
       </div>
     </div>
   );
@@ -192,14 +202,15 @@ const S01Cover: Page = () => (
         DESAFIO DO<br /><span style={{ color: 'var(--osd-accent)' }}>ORÁCULO</span><br />PREDITIVO
       </h1>
       <p style={{ margin: '36px 0 0', color: c.muted, fontSize: 40, lineHeight: 1.35 }}>Ecommerce Customers</p>
-      <div style={{ marginTop: 34, color: c.dim, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>APOLO · NICOLAS · CAIO · GABRIEL</div>
+      <div style={{ marginTop: 34, color: c.dim, fontFamily: mono, fontSize: 19, letterSpacing: '0.06em' }}>APOLO BASTOS · NICOLAS GABRIEL · CAIO SIMONASSI</div>
+      <div style={{ marginTop: 10, color: c.dim, fontFamily: mono, fontSize: 19, letterSpacing: '0.06em' }}>GABRIEL NITO · JÔNATAS</div>
     </div>
     <div style={{ position: 'absolute', right: 218, top: 270, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
       <PredictionNode label="DADOS" detail="sinais observados" accent />
       <div style={{ height: 44, width: 1, background: c.accent }} />
-      <PredictionNode label="MODELO" detail="a construir" />
+      <PredictionNode label="MODELO" detail="alternativas avaliadas" />
       <div style={{ height: 44, width: 1, background: c.line }} />
-      <PredictionNode label="PREVISÃO" detail="valor contínuo · ?" />
+      <PredictionNode label="PREVISÃO" detail="valor contínuo estimado" />
     </div>
   </Frame>
 );
@@ -261,7 +272,7 @@ const S04Structure: Page = () => (
     <div style={{ position: 'absolute', left: 152, top: 116 }}>
       <Eyebrow>03 · ESTRUTURA</Eyebrow>
       <Heading>Nem toda coluna é uma feature.</Heading>
-      <Subheading maxWidth={1240}>A inspeção separou campos numéricos de campos textuais/categóricos. A seleção para o experimento está documentada.</Subheading>
+      <Subheading maxWidth={1240}>A inspeção separou campos numéricos de campos textuais. A seleção preserva apenas sinais com papel preditivo justificável neste experimento.</Subheading>
     </div>
     <div style={{ position: 'absolute', left: 176, top: 442, width: 370, minHeight: 280, boxSizing: 'border-box', border: `1px solid ${c.line}`, background: c.surface, padding: '24px 28px' }}>
       <div style={{ color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>3 · CATEGÓRICAS / TEXTUAIS</div>
@@ -288,61 +299,16 @@ const S04Structure: Page = () => (
     </div>
     <div style={{ position: 'absolute', left: 546, top: 582, width: 184, height: 1, background: c.line }} />
     <div style={{ position: 'absolute', left: 1150, top: 582, width: 45, height: 1, background: c.accent }} />
-    <div style={{ position: 'absolute', left: 176, top: 812, color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.08em' }}>SELEÇÃO DOCUMENTADA · 4 FEATURES · 1 TARGET · 3 EXCLUSÕES</div>
+    <div style={{ position: 'absolute', left: 176, top: 794, color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.08em' }}>4 FEATURES · 1 TARGET · 3 EXCLUSÕES · SEM ENCODING</div>
+    <div style={{ position: 'absolute', left: 176, top: 834, color: c.muted, fontFamily: mono, fontSize: 18, letterSpacing: '0.08em' }}>0 VALORES AUSENTES · 0 LINHAS COMPLETAMENTE DUPLICADAS · NENHUM REGISTRO REMOVIDO</div>
   </Frame>
 );
 
-// ── SLIDE 05 — Initial quality ────────────────────────────────────────────
-const S05Quality: Page = () => (
-  <Frame stage="quality">
-    <div style={{ position: 'absolute', left: 152, top: 126 }}>
-      <Eyebrow>04 · QUALIDADE INICIAL</Eyebrow>
-      <Heading>Sem nulos. Sem duplicatas.</Heading>
-      <Subheading>É o que a inspeção inicial comprova — e só isso.</Subheading>
-    </div>
-    <div style={{ position: 'absolute', left: 260, top: 420, display: 'flex', alignItems: 'stretch', gap: 120 }}>
-      <QualityMetric value="0" label="VALORES AUSENTES" detail="em todas as 8 colunas observadas" />
-      <div style={{ width: 1, background: c.line }} />
-      <QualityMetric value="0" label="LINHAS COMPLETAMENTE DUPLICADAS" detail="nenhum registro repetido na checagem" />
-    </div>
-    <div style={{ position: 'absolute', left: 260, top: 768, color: c.muted, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>NENHUM REGISTRO FOI REMOVIDO · NÃO HOUVE TRATAMENTO DE NULOS OU DUPLICATAS</div>
-  </Frame>
-);
-
-// ── SLIDE 06 — Current state ──────────────────────────────────────────────
-const S06State: Page = () => (
-  <Frame stage="state">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>05 · ESTADO ATUAL</Eyebrow>
-      <Heading>A inspeção terminou.<br />O protocolo está definido.</Heading>
-    </div>
-    <div style={{ position: 'absolute', left: 176, top: 410, width: 690, minHeight: 324, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}0d`, padding: '24px 30px' }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>INSPEÇÃO INICIAL</div>
-      <div style={{ marginTop: 18 }}>
-        <StateLine>carregamento do arquivo</StateLine>
-        <StateLine>head() · shape · info()</StateLine>
-        <StateLine>tipos e classificação preliminar</StateLine>
-        <StateLine>valores ausentes e duplicatas</StateLine>
-      </div>
-    </div>
-    <div style={{ position: 'absolute', left: 1000, top: 410, width: 740, minHeight: 324, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}0d`, padding: '24px 30px' }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.14em' }}>ETAPA 02 · ENTREGAS</div>
-      <div style={{ marginTop: 18 }}>
-        <StateLine color={c.accent}>target · Yearly Amount Spent</StateLine>
-        <StateLine color={c.accent}>features · 4 variáveis numéricas</StateLine>
-        <StateLine color={c.accent}>divisão · 400 treino · 100 teste</StateLine>
-        <StateLine color={c.accent}>escala · StandardScaler no treino</StateLine>
-      </div>
-    </div>
-    <div style={{ position: 'absolute', left: 176, top: 838, color: c.attention, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>PENDENTE · MODELAGEM, MÉTRICAS E CV</div>
-  </Frame>
-);
-
-// ── SLIDE 07 — Target ─────────────────────────────────────────────────────
+// ── SLIDE 05 — Target ─────────────────────────────────────────────────────
 const S07Target: Page = () => (
   <Frame stage="target">
     <div style={{ position: 'absolute', left: 152, top: 120 }}>
-      <Eyebrow>06 · DEFININDO O PROBLEMA</Eyebrow>
+      <Eyebrow>04 · PREPARAÇÃO</Eyebrow>
       <Heading>Features entram. Um target sai.</Heading>
       <Subheading maxWidth={1320}>A pergunta agora é explícita: usar sinais de uso e relacionamento para estimar um valor contínuo.</Subheading>
     </div>
@@ -370,13 +336,13 @@ const S07Target: Page = () => (
   </Frame>
 );
 
-// ── SLIDE 08 — Split ──────────────────────────────────────────────────────
+// ── SLIDE 06 — Split ──────────────────────────────────────────────────────
 const S08Split: Page = () => (
   <Frame stage="split">
     <div style={{ position: 'absolute', left: 152, top: 120 }}>
-      <Eyebrow>07 · DIVISÃO DOS DADOS</Eyebrow>
-      <Heading>Uma divisão. Três modelos.</Heading>
-      <Subheading maxWidth={1320}>Os 500 registros passam por uma única separação reproduzível antes da modelagem futura.</Subheading>
+      <Eyebrow>05 · DIVISÃO DOS DADOS</Eyebrow>
+      <Heading>Uma divisão. Comparação justa.</Heading>
+      <Subheading maxWidth={1320}>Os 500 registros passam por uma única separação reproduzível antes de treinar e comparar os modelos.</Subheading>
     </div>
     <div style={{ position: 'absolute', left: 176, top: 416, display: 'flex', alignItems: 'center', gap: 44 }}>
       <div style={{ width: 350, height: 154, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '24px 30px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -415,11 +381,11 @@ const S08Split: Page = () => (
   </Frame>
 );
 
-// ── SLIDE 09 — Scaling ────────────────────────────────────────────────────
+// ── SLIDE 07 — Scaling ────────────────────────────────────────────────────
 const S09Scaling: Page = () => (
   <Frame stage="scaling">
     <div style={{ position: 'absolute', left: 152, top: 120 }}>
-      <Eyebrow>08 · ESCALA E VAZAMENTO</Eyebrow>
+      <Eyebrow>06 · ESCALA E VAZAMENTO</Eyebrow>
       <Heading>A escala pertence ao treino.</Heading>
       <Subheading maxWidth={1320}>O StandardScaler aprende parâmetros em X_train e apenas transforma X_test.</Subheading>
     </div>
@@ -469,157 +435,287 @@ const S09Scaling: Page = () => (
         <div style={{ marginTop: 10, color: c.muted, fontSize: 24 }}>capacidade equivalente</div>
       </div>
     </div>
-    <div style={{ position: 'absolute', left: 176, top: 840, color: c.accent, fontFamily: mono, fontSize: 21, letterSpacing: '0.09em' }}>SEM FIT NO TESTE · SEM VAZAMENTO DE DADOS</div>
+    <div style={{ position: 'absolute', left: 176, top: 808, color: c.accent, fontFamily: mono, fontSize: 21, letterSpacing: '0.09em' }}>SEM FIT NO TESTE · SEM VAZAMENTO DE DADOS</div>
   </Frame>
 );
 
-// ── SLIDE 10 — Target distribution ────────────────────────────────────────
+// ── SLIDE 08 — Target distribution ────────────────────────────────────────
 const S10TargetDistribution: Page = () => (
   <Frame stage="eda-target">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>09 · EDA · TARGET</Eyebrow>
-      <Heading>O gasto anual se concentra perto de 502.</Heading>
-      <Subheading maxWidth={1160}>Histograma do target nos 400 registros de treinamento.</Subheading>
+    <div style={{ position: 'absolute', left: 152, top: 88 }}>
+      <Eyebrow>07 · EDA · TARGET</Eyebrow>
     </div>
-    <img src={targetDistributionImage} alt="Histograma de Yearly Amount Spent no conjunto de treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1120, height: 470, objectFit: 'contain', objectPosition: 'left center' }} />
-    <div style={{ position: 'absolute', left: 1360, top: 386, width: 360, borderTop: `1px solid ${c.accent}`, borderBottom: `1px solid ${c.line}`, padding: '24px 0 28px' }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.14em' }}>TREINO · N = 400</div>
-      <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 60, fontWeight: 800 }}>501,99</div>
-      <div style={{ marginTop: 8, color: c.muted, fontSize: 24 }}>média do gasto anual</div>
-      <div style={{ marginTop: 26, color: c.soft, fontFamily: mono, fontSize: 22 }}>ASSIMETRIA · 0,068</div>
-      <div style={{ marginTop: 8, color: c.muted, fontSize: 22 }}>formato global equilibrado</div>
-    </div>
+    <div style={{ position: 'absolute', right: 152, top: 90, color: c.muted, fontFamily: mono, fontSize: 17, letterSpacing: '0.1em' }}>FIGURA ORIGINAL DO NOTEBOOK · TREINO</div>
+    <img src={targetDistributionImage} alt="Histograma de Yearly Amount Spent no conjunto de treinamento" style={{ position: 'absolute', left: 176, top: 160, width: 1568, height: 650, objectFit: 'contain' }} />
   </Frame>
 );
 
-// ── SLIDE 11 — Feature distributions ──────────────────────────────────────
+// ── SLIDE 09 — Feature distributions ──────────────────────────────────────
 const S11FeatureDistributions: Page = () => (
   <Frame stage="eda-features">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>10 · EDA · FEATURES</Eyebrow>
-      <Heading>As quatro features têm dispersões próprias.</Heading>
-      <Subheading maxWidth={1220}>As quatro distribuições usam eixos separados.</Subheading>
+    <div style={{ position: 'absolute', left: 152, top: 88 }}>
+      <Eyebrow>08 · EDA · FEATURES</Eyebrow>
     </div>
-    <img src={featureDistributionsImage} alt="Histogramas das quatro features selecionadas no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1160, height: 520, objectFit: 'contain', objectPosition: 'left center' }} />
-    <div style={{ position: 'absolute', left: 1430, top: 380, width: 300, borderTop: `1px solid ${c.accent}`, paddingTop: 22 }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.12em' }}>LEITURA</div>
-      <div style={{ marginTop: 16, color: c.muted, fontSize: 24, lineHeight: 1.45 }}>As variáveis se concentram em faixas estreitas, mas cada faixa tem uma unidade diferente.</div>
-      <div style={{ marginTop: 28, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>NÃO COMPARAR ESCALAS</div>
-      <div style={{ marginTop: 8, color: c.muted, fontSize: 22 }}>A padronização fica preparada para os modelos sensíveis à escala.</div>
-    </div>
+    <div style={{ position: 'absolute', right: 152, top: 90, color: c.muted, fontFamily: mono, fontSize: 17, letterSpacing: '0.1em' }}>FIGURA ORIGINAL DO NOTEBOOK · ESCALAS INDEPENDENTES</div>
+    <img src={featureDistributionsImage} alt="Histogramas das quatro features selecionadas no treinamento" style={{ position: 'absolute', left: 176, top: 160, width: 1568, height: 650, objectFit: 'contain' }} />
   </Frame>
 );
 
-// ── SLIDE 12 — Target correlations ────────────────────────────────────────
-const S12TargetCorrelations: Page = () => (
-  <Frame stage="eda-correlation">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>11 · EDA · CORRELAÇÕES</Eyebrow>
-      <Heading>Membership é a associação linear mais forte.</Heading>
-      <Subheading maxWidth={1280}>Pearson entre cada feature e o target no treino.</Subheading>
-    </div>
-    <div style={{ position: 'absolute', left: 176, top: 368, width: 1260 }}>
-      <CorrelationRow label="Length of Membership" value={0.818441} valueText="0,818" />
-      <CorrelationRow label="Time on App" value={0.509011} valueText="0,509" />
-      <CorrelationRow label="Avg. Session Length" value={0.324297} valueText="0,324" />
-      <CorrelationRow label="Time on Website" value={0.009648} valueText="0,010" />
-    </div>
-    <div style={{ position: 'absolute', left: 1500, top: 394, width: 270, borderTop: `1px solid ${c.attention}`, paddingTop: 22 }}>
-      <div style={{ color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>CAUTELA</div>
-      <div style={{ marginTop: 16, color: c.muted, fontSize: 24, lineHeight: 1.45 }}>Associação linear não é causalidade. Uma correlação baixa também não prova inutilidade em conjunto.</div>
-    </div>
-    <div style={{ position: 'absolute', left: 176, top: 756, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>PEARSON · TREINO · 400 REGISTROS</div>
-  </Frame>
-);
-
-// ── SLIDE 13 — Correlation heatmap ────────────────────────────────────────
+// ── SLIDE 10 — Correlations and multicollinearity ─────────────────────────
 const S13CorrelationHeatmap: Page = () => (
   <Frame stage="eda-heatmap">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>12 · EDA · MULTICOLINEARIDADE</Eyebrow>
-      <Heading>As features apresentam correlações fracas.</Heading>
-      <Subheading maxWidth={1260}>Heatmap das features e do target, em escala de −1 a +1.</Subheading>
+    <div style={{ position: 'absolute', left: 152, top: 88 }}>
+      <Eyebrow>09 · EDA · CORRELAÇÕES</Eyebrow>
     </div>
-    <img src={correlationHeatmapImage} alt="Heatmap de correlação das features e do target no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1120, height: 530, objectFit: 'contain', objectPosition: 'left center' }} />
-    <div style={{ position: 'absolute', left: 1400, top: 366, width: 320, borderTop: `1px solid ${c.accent}`, paddingTop: 22 }}>
-      <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>ENTRE FEATURES</div>
-      <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 56, fontWeight: 800 }}>0,079</div>
-      <div style={{ marginTop: 6, color: c.muted, fontSize: 22 }}>maior |r| observado</div>
-      <div style={{ marginTop: 30, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.1em' }}>VIF · 1,002 — 1,010</div>
-      <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.4 }}>Sem evidência relevante de multicolinearidade nesta amostra.</div>
+    <div style={{ position: 'absolute', right: 152, top: 90, color: c.muted, fontFamily: mono, fontSize: 17, letterSpacing: '0.1em' }}>FIGURA ORIGINAL DO NOTEBOOK · PEARSON</div>
+    <img src={correlationHeatmapImage} alt="Heatmap de correlação das features e do target no treinamento" style={{ position: 'absolute', left: 176, top: 170, width: 1000, height: 600, objectFit: 'contain' }} />
+    <div style={{ position: 'absolute', left: 1240, top: 190, width: 470 }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>COM O TARGET</div>
+      <div style={{ marginTop: 14 }}>
+        <FieldLine>Membership <span style={{ marginLeft: 'auto', color: c.accent }}>0,818</span></FieldLine>
+        <FieldLine>Time on App <span style={{ marginLeft: 'auto', color: c.soft }}>0,509</span></FieldLine>
+        <FieldLine>Avg. Session <span style={{ marginLeft: 'auto', color: c.soft }}>0,324</span></FieldLine>
+        <FieldLine>Time on Website <span style={{ marginLeft: 'auto', color: c.muted }}>0,010</span></FieldLine>
+      </div>
+      <div style={{ marginTop: 42, color: c.attention, fontFamily: mono, fontSize: 18, letterSpacing: '0.1em' }}>ENTRE AS FEATURES</div>
+      <div style={{ marginTop: 12, color: 'var(--osd-text)', fontFamily: display, fontSize: 46, fontWeight: 800 }}>|r| máx. 0,079</div>
+      <div style={{ marginTop: 12, color: c.muted, fontSize: 22, lineHeight: 1.4 }}>VIF entre 1,002 e 1,010. Não há evidência relevante de multicolinearidade nesta amostra.</div>
+      <div style={{ marginTop: 24, color: c.soft, fontFamily: mono, fontSize: 17, letterSpacing: '0.07em' }}>ASSOCIAÇÃO LINEAR NÃO É CAUSALIDADE</div>
     </div>
   </Frame>
 );
 
-// ── SLIDE 14 — Outliers ───────────────────────────────────────────────────
+// ── SLIDE 11 — Outliers ───────────────────────────────────────────────────
 const S14Outliers: Page = () => (
   <Frame stage="eda-outliers">
-    <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>13 · EDA · OUTLIERS</Eyebrow>
-      <Heading>Candidatos a outlier pedem contexto.</Heading>
-      <Subheading maxWidth={1260}>Candidatos pela regra de 1,5 × IQR; nenhum registro foi removido.</Subheading>
+    <div style={{ position: 'absolute', left: 152, top: 88 }}>
+      <Eyebrow>10 · EDA · OUTLIERS</Eyebrow>
     </div>
-    <img src={outlierBoxplotsImage} alt="Boxplots das quatro features e do target no treinamento" style={{ position: 'absolute', left: 176, top: 350, width: 1160, height: 520, objectFit: 'contain', objectPosition: 'left center' }} />
-    <div style={{ position: 'absolute', left: 1420, top: 360, width: 320, borderTop: `1px solid ${c.attention}`, paddingTop: 22 }}>
-      <div style={{ color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.12em' }}>IQR · TREINO</div>
-      <div style={{ marginTop: 20, color: 'var(--osd-text)', fontFamily: display, fontSize: 54, fontWeight: 800 }}>18</div>
-      <div style={{ marginTop: 6, color: c.muted, fontSize: 22 }}>linhas únicas candidatas</div>
-      <div style={{ marginTop: 28, color: c.soft, fontFamily: mono, fontSize: 21, letterSpacing: '0.1em' }}>0 REMOVIDAS</div>
-      <div style={{ marginTop: 10, color: c.muted, fontSize: 22, lineHeight: 1.4 }}>Não há evidência concreta de erro de entrada ou unidade inválida.</div>
+    <div style={{ position: 'absolute', right: 152, top: 90, color: c.muted, fontFamily: mono, fontSize: 17, letterSpacing: '0.1em' }}>FIGURA ORIGINAL DO NOTEBOOK · IQR · TREINO</div>
+    <img src={outlierBoxplotsImage} alt="Boxplots das quatro features e do target no treinamento; candidatos pela regra de 1,5 × IQR, 18 linhas únicas candidatas e 0 REMOVIDAS" style={{ position: 'absolute', left: 176, top: 160, width: 1568, height: 650, objectFit: 'contain' }} />
+  </Frame>
+);
+
+// ── SLIDE 12 — Models ────────────────────────────────────────────────────
+const S16Models: Page = () => (
+  <Frame stage="models">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>11 · MODELAGEM</Eyebrow>
+      <Heading>Cinco réguas para a mesma previsão.</Heading>
+      <Subheading maxWidth={1320}>Os modelos recebem os mesmos dados de treino. O baseline mostra o patamar mínimo que uma previsão útil precisa superar.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 395, display: 'flex', gap: 24 }}>
+      <div style={{ width: 286, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.dim}`, background: c.surface, padding: '24px 26px' }}>
+        <div style={{ color: c.dim, fontFamily: mono, fontSize: 18, letterSpacing: '0.12em' }}>BASELINE</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 31, fontWeight: 800 }}>Dummy</div>
+        <div style={{ marginTop: 14, color: c.muted, fontSize: 21, lineHeight: 1.35 }}>prevê a média do treino</div>
+      </div>
+      <div style={{ width: 286, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '24px 26px' }}>
+        <div style={{ color: c.accent, fontFamily: mono, fontSize: 18, letterSpacing: '0.12em' }}>REFERÊNCIA</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 31, fontWeight: 800 }}>RLM</div>
+        <div style={{ marginTop: 14, color: c.muted, fontSize: 21, lineHeight: 1.35 }}>LinearRegression<br />+ StandardScaler</div>
+      </div>
+      <div style={{ width: 286, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.soft}`, background: c.surface, padding: '24px 26px' }}>
+        <div style={{ color: c.soft, fontFamily: mono, fontSize: 18, letterSpacing: '0.12em' }}>ENSEMBLE</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 31, fontWeight: 800 }}>Forest</div>
+        <div style={{ marginTop: 14, color: c.muted, fontSize: 21, lineHeight: 1.35 }}>100 árvores<br />random_state = 42</div>
+      </div>
+      <div style={{ width: 286, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.attention}`, background: c.surface, padding: '24px 26px' }}>
+        <div style={{ color: c.attention, fontFamily: mono, fontSize: 18, letterSpacing: '0.12em' }}>MARGEM</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 31, fontWeight: 800 }}>SVR Linear</div>
+        <div style={{ marginTop: 14, color: c.muted, fontSize: 21, lineHeight: 1.35 }}>StandardScaler<br />+ kernel linear</div>
+      </div>
+      <div style={{ width: 286, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.attention}`, background: c.surface, padding: '24px 26px' }}>
+        <div style={{ color: c.attention, fontFamily: mono, fontSize: 18, letterSpacing: '0.12em' }}>NÃO LINEAR</div>
+        <div style={{ marginTop: 18, color: 'var(--osd-text)', fontFamily: display, fontSize: 31, fontWeight: 800 }}>SVR RBF</div>
+        <div style={{ marginTop: 14, color: c.muted, fontSize: 21, lineHeight: 1.35 }}>StandardScaler<br />+ kernel RBF</div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 758, color: c.accent, fontFamily: mono, fontSize: 21, letterSpacing: '0.08em' }}>PIPELINES PROTEGEM A ESCALA DENTRO DE CADA TREINO</div>
+  </Frame>
+);
+
+// ── SLIDE 17 — Cross-validation ──────────────────────────────────────────
+const S17CrossValidation: Page = () => (
+  <Frame stage="cv">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>12 · VALIDAÇÃO CRUZADA</Eyebrow>
+      <Heading>A comparação acontece dentro do treino.</Heading>
+      <Subheading maxWidth={1320}>K-Fold com 5 dobras no treino. Cada dobra valida 80 registros.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 400, width: 1180 }}>
+      <div style={{ display: 'flex', minHeight: 56, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: c.accent, fontFamily: mono, fontSize: 18, letterSpacing: '0.1em' }}><div style={{ width: 390 }}>MODELO</div><div style={{ width: 240 }}>R² VAL.</div><div style={{ width: 260 }}>RMSE VAL.</div><div>GAP TREINO − VAL.</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 390 }}>Dummy</div><div style={{ width: 240 }}>−0,0166</div><div style={{ width: 260 }}>81,04</div><div>0,0166</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: 'var(--osd-text)', fontSize: 24 }}><div style={{ width: 390 }}>Regressão Linear Múltipla</div><div style={{ width: 240, color: c.accent }}>0,9848</div><div style={{ width: 260, color: c.accent }}>9,88</div><div>0,0007</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 390 }}>Random Forest</div><div style={{ width: 240 }}>0,9381</div><div style={{ width: 260 }}>19,92</div><div>0,0527</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: 'var(--osd-text)', fontSize: 24 }}><div style={{ width: 390 }}>SVR Linear</div><div style={{ width: 240, color: c.accent }}>0,9848</div><div style={{ width: 260, color: c.accent }}>9,86</div><div>0,0006</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 390 }}>SVR RBF</div><div style={{ width: 240 }}>0,9212</div><div style={{ width: 260 }}>22,02</div><div>0,0574</div></div>
+    </div>
+    <div style={{ position: 'absolute', left: 1450, top: 416, width: 280, borderTop: `1px solid ${c.attention}`, paddingTop: 20 }}>
+      <div style={{ color: c.attention, fontFamily: mono, fontSize: 18, letterSpacing: '0.1em' }}>LEITURA</div>
+      <div style={{ marginTop: 14, color: c.muted, fontSize: 23, lineHeight: 1.42 }}>RLM e SVR Linear tiveram desempenho e estabilidade muito próximos.</div>
+      <div style={{ marginTop: 28, color: c.attention, fontFamily: mono, fontSize: 18, letterSpacing: '0.08em' }}>NÃO É ESTIMATIVA EXTERNA</div>
+      <div style={{ marginTop: 10, color: c.muted, fontSize: 21, lineHeight: 1.38 }}>A mesma CV ajudou a selecionar configurações.</div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 810, color: c.soft, fontFamily: mono, fontSize: 20, letterSpacing: '0.08em' }}>N = 400 · 5 FOLDS · RMSE EM UNIDADES MONETÁRIAS DO DATASET</div>
+  </Frame>
+);
+
+// ── SLIDE 13 — Hyperparameters ───────────────────────────────────────────
+const S17Hyperparameters: Page = () => (
+  <Frame stage="cv">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>13 · AJUSTE DE HIPERPARÂMETROS</Eyebrow>
+      <Heading>A busca confirmou a configuração inicial.</Heading>
+      <Subheading maxWidth={1320}>GridSearchCV usou somente o conjunto de treino.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 430, display: 'flex', gap: 36 }}>
+      <div style={{ width: 470, minHeight: 278, boxSizing: 'border-box', border: `1px solid ${c.soft}`, background: c.surface, padding: '24px 28px' }}>
+        <div style={{ color: c.soft, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>RANDOM FOREST · 4 CONFIGURAÇÕES</div>
+        <div style={{ marginTop: 24, color: 'var(--osd-text)', fontFamily: mono, fontSize: 22, lineHeight: 1.65 }}>n_estimators = 100<br />max_depth = None<br />min_samples_leaf = 1</div>
+        <div style={{ marginTop: 22, color: c.muted, fontSize: 21 }}>RMSE médio CV: 19,9157</div>
+      </div>
+      <div style={{ width: 410, minHeight: 278, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '24px 28px' }}>
+        <div style={{ color: c.accent, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>SVR LINEAR · 2 CONFIGURAÇÕES</div>
+        <div style={{ marginTop: 24, color: 'var(--osd-text)', fontFamily: mono, fontSize: 22, lineHeight: 1.65 }}>kernel = linear<br />C = 10<br />epsilon = 0,1</div>
+        <div style={{ marginTop: 22, color: c.muted, fontSize: 21 }}>RMSE médio CV: 9,8626</div>
+      </div>
+      <div style={{ width: 410, minHeight: 278, boxSizing: 'border-box', border: `1px solid ${c.attention}`, background: c.surface, padding: '24px 28px' }}>
+        <div style={{ color: c.attention, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>SVR RBF · 4 CONFIGURAÇÕES</div>
+        <div style={{ marginTop: 24, color: 'var(--osd-text)', fontFamily: mono, fontSize: 22, lineHeight: 1.65 }}>kernel = rbf<br />C = 100<br />epsilon = 0,1 · gamma = scale</div>
+        <div style={{ marginTop: 22, color: c.muted, fontSize: 21 }}>RMSE médio CV: 22,0225</div>
+      </div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 780, color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.08em' }}>GRADE PEQUENA · COMPARAÇÃO INTERNA · SEM USO DO CONJUNTO DE TESTE</div>
+  </Frame>
+);
+
+// ── SLIDE 14 — Test comparison ───────────────────────────────────────────
+const S18TestComparison: Page = () => (
+  <Frame stage="test">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>14 · TESTE RESERVADO</Eyebrow>
+      <Heading>No teste, a vantagem é de centésimos.</Heading>
+      <Subheading maxWidth={1300}>As métricas abaixo usam as 100 observações separadas antes da modelagem. O teste não entrou na busca desta rodada.</Subheading>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 400, width: 1510 }}>
+      <div style={{ display: 'flex', minHeight: 54, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: c.accent, fontFamily: mono, fontSize: 18, letterSpacing: '0.08em' }}><div style={{ width: 410 }}>MODELO</div><div style={{ width: 180 }}>R²</div><div style={{ width: 210 }}>MAE</div><div style={{ width: 190 }}>MAPE</div><div>RMSE</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 410 }}>Dummy</div><div style={{ width: 180 }}>−0,0362</div><div style={{ width: 210 }}>54,91</div><div style={{ width: 190 }}>12,35%</div><div>71,63</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: 'var(--osd-text)', fontSize: 24 }}><div style={{ width: 410 }}>Regressão Linear Múltipla</div><div style={{ width: 180, color: c.accent }}>0,9778</div><div style={{ width: 210, color: c.accent }}>8,56</div><div style={{ width: 190, color: c.accent }}>1,79%</div><div style={{ color: c.accent }}>10,48</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 410 }}>Random Forest</div><div style={{ width: 180 }}>0,9336</div><div style={{ width: 210 }}>13,65</div><div style={{ width: 190 }}>2,99%</div><div>18,13</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.accent}`, color: 'var(--osd-text)', fontSize: 24 }}><div style={{ width: 410 }}>SVR Linear</div><div style={{ width: 180, color: c.attention }}>0,9780</div><div style={{ width: 210, color: c.attention }}>8,53</div><div style={{ width: 190, color: c.attention }}>1,79%</div><div style={{ color: c.attention }}>10,43</div></div>
+      <div style={{ display: 'flex', minHeight: 66, alignItems: 'center', borderBottom: `1px solid ${c.line}`, color: c.muted, fontSize: 24 }}><div style={{ width: 410 }}>SVR RBF</div><div style={{ width: 180 }}>0,9613</div><div style={{ width: 210 }}>10,19</div><div style={{ width: 190 }}>2,22%</div><div>13,85</div></div>
+    </div>
+    <div style={{ position: 'absolute', left: 176, top: 812, color: c.attention, fontFamily: mono, fontSize: 20, letterSpacing: '0.08em' }}>SVR LINEAR É MARGINALMENTE MELHOR · A DIFERENÇA PRÁTICA É PEQUENA</div>
+  </Frame>
+);
+
+// ── SLIDE 15 — Predictions ───────────────────────────────────────────────
+const S19Predictions: Page = () => (
+  <Frame stage="prediction">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>15 · PREVISÕES</Eyebrow>
+      <Heading>Os dois modelos lineares acompanham a diagonal.</Heading>
+      <Subheading maxWidth={1260}>Valores reais versus preditos nas 100 observações de teste; a linha tracejada representa a previsão perfeita.</Subheading>
+    </div>
+    <img src={realVsPredImage} alt="Valores reais versus preditos para os quatro modelos no conjunto de teste" style={{ position: 'absolute', left: 176, top: 445, width: 1510, height: 360, objectFit: 'contain' }} />
+    <div style={{ position: 'absolute', left: 176, top: 830, color: c.muted, fontFamily: mono, fontSize: 20, letterSpacing: '0.08em' }}>LEITURA VISUAL COERENTE COM AS MÉTRICAS · NÃO SUBSTITUI VALIDAÇÃO EXTERNA</div>
+  </Frame>
+);
+
+// ── SLIDE 16 — Residual diagnostics ──────────────────────────────────────
+const S20Diagnostics: Page = () => (
+  <Frame stage="diagnostics">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>16 · DIAGNÓSTICO</Eyebrow>
+      <Heading>Resíduos ajudam a procurar, não a provar.</Heading>
+      <Subheading maxWidth={1260}>Na RLM, os resíduos ficam dos dois lados de zero, sem funil evidente.</Subheading>
+    </div>
+    <img src={residualsImage} alt="Resíduos versus predições dos modelos no teste" style={{ position: 'absolute', left: 176, top: 430, width: 1040, height: 300, objectFit: 'contain' }} />
+    <img src={residualDistributionImage} alt="Distribuição dos resíduos da regressão linear múltipla" style={{ position: 'absolute', left: 1260, top: 445, width: 450, height: 240, objectFit: 'contain' }} />
+    <div style={{ position: 'absolute', left: 176, top: 770, color: c.attention, fontFamily: mono, fontSize: 20, letterSpacing: '0.08em' }}>SEM FUNIL EVIDENTE · SEM PROVA DE NORMALIDADE OU HOMOCEDASTICIDADE</div>
+  </Frame>
+);
+
+// ── SLIDE 17 — Feature importance ────────────────────────────────────────
+const S21Importance: Page = () => (
+  <Frame stage="importance">
+    <div style={{ position: 'absolute', left: 152, top: 112 }}>
+      <Eyebrow>17 · INTERPRETAÇÃO</Eyebrow>
+      <Heading>Membership e App carregam o maior sinal.</Heading>
+      <Subheading maxWidth={1260}>RLM e Random Forest apontam a mesma ordem geral das features.</Subheading>
+    </div>
+    <img src={featureImportancesImage} alt="Impacto relativo das features na RLM e importância MDI no Random Forest" style={{ position: 'absolute', left: 176, top: 430, width: 1120, height: 320, objectFit: 'contain' }} />
+    <div style={{ position: 'absolute', left: 1390, top: 440, width: 320, borderTop: `1px solid ${c.accent}`, paddingTop: 20 }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 18, letterSpacing: '0.1em' }}>ASSOCIAÇÃO, NÃO CAUSA</div>
+      <div style={{ marginTop: 16, color: c.muted, fontSize: 23, lineHeight: 1.42 }}>Na RLM, uma unidade adicional de Membership se associa a +61,90 unidades no target, condicionada às demais features.</div>
+      <div style={{ marginTop: 24, color: c.muted, fontSize: 21, lineHeight: 1.4 }}>MDI descreve redução média do erro quadrático nas árvores; não mede causalidade.</div>
     </div>
   </Frame>
 );
 
-// ── SLIDE 15 — EDA summary ────────────────────────────────────────────────
-const S15EdaSummary: Page = () => (
-  <Frame stage="eda-summary">
+// ── SLIDE 18 — Decision ──────────────────────────────────────────────────
+const S22Decision: Page = () => (
+  <Frame stage="decision">
     <div style={{ position: 'absolute', left: 152, top: 112 }}>
-      <Eyebrow>14 · EDA · SÍNTESE</Eyebrow>
-      <Heading>A EDA reduz a incerteza.</Heading>
-      <Subheading maxWidth={1320}>As decisões permanecem descritivas e não antecipam desempenho de nenhum modelo.</Subheading>
+      <Eyebrow>18 · DECISÃO</Eyebrow>
+      <Heading>A escolha favorece a simplicidade.</Heading>
+      <Subheading maxWidth={1280}>O SVR Linear ganhou por uma margem numérica mínima. Para este experimento acadêmico, a RLM oferece o melhor equilíbrio entre precisão, explicação e simplicidade.</Subheading>
     </div>
-    <div style={{ position: 'absolute', left: 176, top: 400, display: 'flex', gap: 56 }}>
-      <div style={{ width: 330, borderTop: `1px solid ${c.accent}`, paddingTop: 18 }}>
-        <div style={{ color: c.accent, fontFamily: display, fontSize: 54, fontWeight: 800 }}>501,99</div>
-        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>MÉDIA DO TARGET</div>
-        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>assimetria 0,068</div>
-      </div>
-      <div style={{ width: 330, borderTop: `1px solid ${c.accent}`, paddingTop: 18 }}>
-        <div style={{ color: c.accent, fontFamily: display, fontSize: 54, fontWeight: 800 }}>0,818</div>
-        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>MAIOR ASSOCIAÇÃO</div>
-        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>Length of Membership</div>
-      </div>
-      <div style={{ width: 330, borderTop: `1px solid ${c.soft}`, paddingTop: 18 }}>
-        <div style={{ color: c.soft, fontFamily: display, fontSize: 54, fontWeight: 800 }}>1,002–1,010</div>
-        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>VIF DAS FEATURES</div>
-        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>colinearidade baixa</div>
-      </div>
-      <div style={{ width: 330, borderTop: `1px solid ${c.attention}`, paddingTop: 18 }}>
-        <div style={{ color: c.attention, fontFamily: display, fontSize: 54, fontWeight: 800 }}>18 / 400</div>
-        <div style={{ marginTop: 12, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.1em' }}>CANDIDATOS IQR</div>
-        <div style={{ marginTop: 10, color: c.muted, fontSize: 22 }}>preservados · 0 removidos</div>
+    <div style={{ position: 'absolute', left: 176, top: 520, width: 700, minHeight: 260, boxSizing: 'border-box', border: `1px solid ${c.accent}`, background: `${c.accent}12`, padding: '24px 32px' }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 20, letterSpacing: '0.13em' }}>MODELO RECOMENDADO</div>
+      <div style={{ marginTop: 16, color: 'var(--osd-text)', fontFamily: display, fontSize: 46, lineHeight: 1.05, fontWeight: 900 }}>REGRESSÃO LINEAR<br />MÚLTIPLA</div>
+      <div style={{ marginTop: 16, color: c.muted, fontSize: 20, lineHeight: 1.35 }}>qualidade praticamente empatada · coeficientes diretos · menor complexidade</div>
+    </div>
+    <div style={{ position: 'absolute', left: 1050, top: 520, width: 650 }}>
+      <div style={{ color: c.attention, fontFamily: mono, fontSize: 20, letterSpacing: '0.13em' }}>O QUE A DECISÃO NÃO DIZ</div>
+      <div style={{ marginTop: 18 }}>
+        <StateLine color={c.soft}>não aprova uso em produção real</StateLine>
+        <StateLine color={c.soft}>não prova causalidade</StateLine>
+        <StateLine color={c.soft}>não elimina necessidade de validação externa</StateLine>
+        <StateLine color={c.soft}>não declara vencedor universal</StateLine>
       </div>
     </div>
-    <div style={{ position: 'absolute', left: 176, top: 760, color: c.accent, fontFamily: mono, fontSize: 22, letterSpacing: '0.08em' }}>FEATURES MANTIDAS · PROTOCOLO INTACTO · MODELAGEM PENDENTE</div>
+    <div style={{ position: 'absolute', left: 176, top: 820, color: c.muted, fontFamily: mono, fontSize: 19, letterSpacing: '0.07em' }}>LIMITAÇÕES · 500 REGISTROS · UMA DIVISÃO · CV DE 5 FOLDS · BUSCA PEQUENA · TESTE JÁ USADO EM CONTRIBUIÇÕES ANTERIORES</div>
+  </Frame>
+);
+
+// ── SLIDE 19 — Close ─────────────────────────────────────────────────────
+const S23Close: Page = () => (
+  <Frame stage="decision">
+    <div style={{ position: 'absolute', left: 152, top: 238, width: 1180 }}>
+      <Eyebrow>19 · ENCERRAMENTO</Eyebrow>
+      <h1 style={{ margin: '28px 0 0', fontFamily: display, fontSize: 132, lineHeight: 0.94, letterSpacing: '-0.065em', fontWeight: 900 }}>Precisão quase<br />empatada. RLM<br />recomendada.</h1>
+      <p style={{ margin: '38px 0 0', maxWidth: 900, color: c.muted, fontSize: 34, lineHeight: 1.42 }}>Neste experimento, a Regressão Linear Múltipla equilibra desempenho, simplicidade e interpretação.</p>
+    </div>
+    <div style={{ position: 'absolute', right: 176, top: 426, width: 450, borderTop: `1px solid ${c.accent}`, paddingTop: 22 }}>
+      <div style={{ color: c.accent, fontFamily: mono, fontSize: 22, letterSpacing: '0.12em' }}>PERGUNTAS</div>
+      <div style={{ marginTop: 24, color: 'var(--osd-text)', fontFamily: mono, fontSize: 20, lineHeight: 1.6 }}>github.com/GabrielNito/<br />desafio-do-oraculo-preditivo</div>
+    </div>
   </Frame>
 );
 
 export const notes = [
-  'Abra nomeando o projeto e o grupo. A capa apresenta a metáfora do oráculo como um sistema técnico: sinais entram, uma estimativa poderá sair. Ainda não existe modelo executado; o ponto de interrogação é deliberado.',
-  'Este slide introduz a pergunta do projeto. O notebook agora confirma que Yearly Amount Spent é o target: o valor gasto anualmente pelo cliente. Como a saída é numérica e contínua, o problema é de regressão. A definição do target não significa que algum modelo já tenha sido treinado.',
-  'Mostre os números diretamente comprovados pelos outputs: 500 registros e 8 colunas. O arquivo foi carregado com pandas a partir de ../data/Ecommerce Customers e o README o descreve como CSV sem extensão. Este slide fala de dimensão, não de qualidade ou desempenho.',
-  'A tabela vem de df.dtypes e da classificação preliminar criada no notebook: cinco colunas float64 e três colunas str. A Etapa 02 transforma essa inspeção em uma decisão explícita: quatro numéricas serão features, Yearly Amount Spent será o target e os três textos serão excluídos.',
-  'Os dois zeros são verificações específicas: zero valores ausentes em todas as colunas e zero linhas completamente duplicadas. Isso não prova ausência de outliers, consistência estatística ou adequação para modelagem. Nenhum registro foi removido e não houve tratamento de nulos ou duplicatas nesta etapa.',
-  'O painel azul resume a inspeção inicial: carregamento, estrutura, tipos, valores ausentes e duplicatas. O painel de entregas da Etapa 02 destaca o target, as quatro features, a divisão 400/100 e o StandardScaler ajustado no treino. A EDA agora foi concluída; modelos, métricas, resíduos, avaliação de overfitting e validação cruzada continuam pendentes.',
-  'O target é a variável dependente y, o valor que queremos prever. As quatro features são variáveis independentes X ligadas a sessão, aplicativo, website e duração de relacionamento. Email, Address e Avatar não entram: são identificadores textuais ou não possuem significado preditivo justificado para este experimento. Por isso não aplicamos encoding categórico.',
-  'A divisão usa os 500 registros reais: 400 para treino e 100 para teste, equivalentes a 80% e 20%. random_state=42 fixa o sorteio para que Linear, Random Forest e SVR recebam os mesmos registros. Treino aprende padrões; teste permanece reservado para a avaliação futura de generalização.',
-  'O StandardScaler é preparado em duas operações. fit_transform aprende média e desvio apenas em X_train; transform aplica os mesmos parâmetros em X_test. SVR é sensível à escala, enquanto Random Forest geralmente não precisa dela e Regressão Linear sem regularização conserva capacidade preditiva equivalente em condições usuais. Em validação cruzada, o scaler deverá ficar dentro de um Pipeline em cada fold. A EDA está concluída, mas nenhuma métrica ou modelo foi calculado.',
-  'O histograma usa os 400 registros de treinamento e não assume uma moeda específica. A média observada é 501,99, a mediana é 502,01 e a assimetria calculada é 0,068. Isso descreve concentração e dispersão da amostra; não é uma demonstração de normalidade nem de qualidade preditiva.',
-  'Esta grade mostra as quatro distribuições nas unidades originais. A leitura importante é a concentração em faixas relativamente estreitas, sem comparar diretamente escalas. O StandardScaler já foi preparado na Etapa 02 para os modelos que dependem mais da escala.',
-  'As barras usam correlação de Pearson entre cada feature e Yearly Amount Spent. Length of Membership aparece com 0,818, Time on App com 0,509, Avg. Session Length com 0,324 e Time on Website com 0,010. Fale em associação linear, nunca em causalidade. A correlação baixa de uma feature não autoriza removê-la automaticamente.',
-  'O heatmap reúne features e target na mesma matriz. Entre as features, o maior valor absoluto é 0,079. O VIF calculado apenas com os preditores varia de 1,002 a 1,010, com matriz bem condicionada. Isso não indica multicolinearidade relevante nesta amostra, mas não é um limiar universal nem uma previsão de desempenho.',
-  'Os boxplots mostram candidatos pela regra de 1,5 vezes o IQR. Há 2, 3, 1, 12 e 6 candidatos nas cinco variáveis, respectivamente, e 18 linhas únicas na união. Um extremo estatístico não é automaticamente erro: sem evidência de inconsistência, a decisão foi preservar todos os registros. A próxima transição é a síntese.',
-  'A síntese fecha a EDA com quatro evidências: target centrado em 501,99, maior associação de 0,818, VIFs próximos de 1 e 18 linhas candidatas mantidas. Estas conclusões descrevem o treinamento e preservam o protocolo aprovado. A modelagem, as métricas, a validação cruzada e a análise de resíduos continuam para a etapa seguinte.'
+  'Abra nomeando o projeto, o dataset e o Grupo 01: Apolo Bastos, Nicolas Gabriel, Caio Simonassi, Gabriel Nito e Jônatas. Antecipe que a apresentação percorre o experimento completo, do dado à recomendação, sem tratar o modelo como pronto para produção.',
+  'Yearly Amount Spent é o valor anual que queremos estimar. Como a saída é numérica e contínua, o problema é de regressão. A seguir, apresentamos quais sinais entraram no experimento.',
+  'Mostre os números diretamente comprovados pelo notebook: 500 registros e 8 colunas. O arquivo foi carregado com pandas a partir de ../data/Ecommerce Customers. Esta etapa descreve dimensão, não qualidade ou desempenho.',
+  'A inspeção mostra cinco colunas numéricas e três textuais. Email, Address e Avatar foram excluídas porque não têm papel preditivo justificável no experimento; por isso não houve encoding. Também foram encontrados zero valores ausentes e zero linhas completamente duplicadas. Esses resultados não eliminam a necessidade de investigar outliers.',
+  'O target é a variável dependente y. As quatro features são as variáveis X ligadas a sessão, aplicativo, website e duração do relacionamento. Essa seleção produz uma pergunta de regressão clara e auditável.',
+  'A divisão usa 400 registros para treino e 100 para teste, equivalentes a 80% e 20%. random_state=42 fixa o sorteio para que todos os modelos recebam as mesmas observações. O teste ficou separado da busca de hiperparâmetros desta rodada.',
+  'StandardScaler aprende média e desvio apenas em X_train com fit_transform e usa esses mesmos parâmetros em X_test com transform. SVR depende mais da escala; Random Forest geralmente não precisa dela. Dentro da validação cruzada, o scaler ficou no Pipeline para impedir vazamento entre as dobras.',
+  'O histograma é a figura original do notebook e usa os 400 registros de treino. A média é 501,99 e a assimetria é 0,068. Isso descreve a amostra, sem assumir uma moeda real, normalidade ou qualidade preditiva.',
+  'As quatro distribuições mantêm suas escalas originais. Compare formatos dentro de cada painel, não as amplitudes entre features. A padronização já foi delimitada ao contexto dos modelos sensíveis à escala.',
+  'O heatmap reúne as correlações de Pearson. Length of Membership tem a maior associação com o target, 0,818; Time on Website tem 0,010. Entre features, a maior correlação absoluta é 0,079 e o VIF varia de 1,002 a 1,010. Fale em associação, nunca em causalidade.',
+  'Os boxplots usam a regra de 1,5 vezes o IQR. Há 18 linhas únicas candidatas entre 400, mas não houve evidência de erro de registro. Por isso nenhum dado foi removido. A decisão preserva o protocolo e conduz à modelagem.',
+  'Apresente as cinco referências de forma funcional. Dummy prevê a média do treino. A RLM oferece coeficientes interpretáveis. Random Forest adiciona árvores com bagging, ou seja, várias árvores treinadas em amostras reamostradas e combinadas. Os SVRs comparam uma margem linear com uma fronteira RBF mais flexível.',
+  'A validação cruzada ocorre apenas nas 400 observações de treino. Em cada dobra, 320 registros treinam e 80 validam. RLM e SVR Linear têm R² médio de 0,9848 e gaps muito baixos. Random Forest e SVR RBF apresentam gaps maiores nesta configuração. Como a mesma CV ajudou na seleção, ela serve à comparação interna, não substitui validação externa.',
+  'GridSearchCV avaliou uma grade pequena: quatro configurações para Random Forest, duas para SVR Linear e quatro para SVR RBF. O critério foi o menor RMSE médio de validação. Em todos os casos, a busca preservou a configuração original listada no slide. A próxima comparação usa o teste reservado.',
+  'Esta tabela usa as 100 observações de teste. SVR Linear tem a melhor performance numérica por margem estreita: RMSE 10,43 contra 10,48 e R² 0,9780 contra 0,9778 da RLM. MAE mede o erro absoluto médio; RMSE dá peso maior aos erros maiores; MAPE expressa o erro relativo médio em percentual.',
+  'A diagonal tracejada representa previsão sem erro. RLM e SVR Linear se concentram mais perto dela; Random Forest e SVR RBF mostram maior dispersão. O gráfico ilustra a tabela, mas não substitui nova validação.',
+  'Resíduos são valores reais menos previstos. Na RLM eles aparecem dos dois lados de zero, sem funil evidente nesta inspeção; o Random Forest apresenta maior dispersão. O histograma contém uma curva de referência, mas nenhuma das figuras prova normalidade ou homocedasticidade.',
+  'Os dois painéis apontam Length of Membership como o sinal de maior peso, seguido por Time on App. Na RLM, o coeficiente é uma associação condicional. No Forest, MDI mede redução média do erro quadrático nas árvores. Nenhuma das duas leituras prova causalidade.',
+  'Diferencie métrica e decisão. O SVR Linear venceu por centésimos, mas a RLM é recomendada porque praticamente empata em desempenho e é mais simples de interpretar, implementar e explicar. Reforce os limites: amostra pequena, uma divisão, grade pequena e ausência de validação externa. O modelo não está aprovado para produção.',
+  'Agradeça e convide perguntas. Se perguntarem por que não escolher o SVR Linear, retome a diferença mínima nas métricas e o ganho de interpretabilidade da RLM. O repositório no slide permite consultar notebook, código e figuras completas.'
 ] satisfies (string | undefined)[];
 
 export const meta: SlideMeta = {
@@ -628,4 +724,4 @@ export const meta: SlideMeta = {
   createdAt: '2026-10-05T01:04:16.943Z',
 };
 
-export default [S01Cover, S02Problem, S03Dataset, S04Structure, S05Quality, S06State, S07Target, S08Split, S09Scaling, S10TargetDistribution, S11FeatureDistributions, S12TargetCorrelations, S13CorrelationHeatmap, S14Outliers, S15EdaSummary] satisfies Page[];
+export default [S01Cover, S02Problem, S03Dataset, S04Structure, S07Target, S08Split, S09Scaling, S10TargetDistribution, S11FeatureDistributions, S13CorrelationHeatmap, S14Outliers, S16Models, S17CrossValidation, S17Hyperparameters, S18TestComparison, S19Predictions, S20Diagnostics, S21Importance, S22Decision, S23Close] satisfies Page[];

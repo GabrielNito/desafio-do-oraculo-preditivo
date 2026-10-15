@@ -14,6 +14,10 @@ const requiredAssets = [
   'eda-feature-distributions.png',
   'eda-correlation-heatmap.png',
   'eda-outlier-boxplots.png',
+  'model-real-vs-pred.png',
+  'model-residuals.png',
+  'model-residual-distribution.png',
+  'model-feature-importances.png',
 ];
 
 const contractOnly = process.argv.includes('--contract-only');
@@ -89,6 +93,9 @@ requireIncludes(outputText, [
   'Número de condição da matriz de correlação das features: 1.242',
   'Linhas únicas com pelo menos um candidato a outlier: 18 de 400 (4.50%).',
   'Protocolo da Etapa 02 preservado após a EDA: OK',
+  'RESUMO DO AJUSTE DE HIPERPARÂMETROS',
+  'DESEMPENHO NA VALIDAÇÃO CRUZADA (K=5 FOLDS)',
+  'TABELA COMPARATIVA FINAL (CONJUNTO DE TESTE, N = 100)',
 ], 'notebook outputs');
 
 const dtypeSummaryMatch = outputText.match(/dtypes:\s*([^\r\n]+)/i);
@@ -148,16 +155,84 @@ requireIncludes(deck, [
   '0,079',
   '1,002',
   '1,010',
-  '18 / 400',
+  '18 linhas únicas',
   '1,5 × IQR',
   '0 REMOVIDAS',
+  'Dummy',
+  'Regressão Linear Múltipla',
+  'Random Forest',
+  'SVR Linear',
+  'SVR RBF',
+  'GridSearchCV',
+  '4 CONFIGURAÇÕES',
+  '2 CONFIGURAÇÕES',
+  'n_estimators = 100',
+  'max_depth = None',
+  'min_samples_leaf = 1',
+  'kernel = linear',
+  'kernel = rbf',
+  'C = 10',
+  'C = 100',
+  'gamma = scale',
+  '19,9157',
+  '9,8626',
+  '22,0225',
+  '−0,0166',
+  '0,9848',
+  '0,0007',
+  '0,9381',
+  '0,0527',
+  '0,0006',
+  '0,9212',
+  '0,0574',
+  '−0,0362',
+  '54,91',
+  '12,35%',
+  '71,63',
+  '0,9778',
+  '8,56',
+  '1,79%',
+  '10,48',
+  '0,9336',
+  '13,65',
+  '2,99%',
+  '18,13',
+  '0,9780',
+  '8,53',
+  '0,9613',
+  '10,19',
+  '2,22%',
+  '13,85',
+  'SEM PROVA DE NORMALIDADE',
+  'REGRESSÃO LINEAR',
+  'não aprova uso em produção real',
+  "new URL('./assets/eda-outlier-boxplots.png', import.meta.url).href",
+  "new URL('./assets/model-real-vs-pred.png', import.meta.url).href",
+  "new URL('./assets/model-residuals.png', import.meta.url).href",
+  "new URL('./assets/model-residual-distribution.png', import.meta.url).href",
+  "new URL('./assets/model-feature-importances.png', import.meta.url).href",
+  'src={outlierBoxplotsImage}',
+  'src={correlationHeatmapImage}',
+  'src={featureDistributionsImage}',
+  'src={realVsPredImage}',
+  'src={residualsImage}',
+  'src={residualDistributionImage}',
+  'src={featureImportancesImage}',
 ], 'deck evidence');
 
 if (/variável-alvo ainda não foi definida/i.test(deck)) fail('deck retains the stale undefined-target claim');
 if (/treino · teste · pré-processamento/i.test(deck)) fail('deck retains the stale pending-preprocessing claim');
 if (/EDA completa ainda não foi realizada/i.test(deck)) fail('deck retains the stale pending-EDA claim');
-if (/(?:R²|RMSE|MAPE|MAE)\s*[:=]\s*\d/i.test(deck)) fail('deck contains an unverified metric value');
-if (/(?:modelo vencedor|modelo recomendado|random forest venceu|svr venceu|regressão linear venceu)/i.test(deck)) fail('deck contains an unverified verdict');
-if (!/ainda não|a definir|não realizado/i.test(deck)) fail('deck does not mark unfinished work');
+if (/modelagem pendente/i.test(deck)) fail('deck retains the stale pending-modeling claim');
+if (/a construir/i.test(deck) || /métricas não calculadas/i.test(deck)) fail('deck retains a stale unfinished-work claim');
+if (!/outlierBoxplotsImage[^\n]*objectFit: 'contain'/.test(deck)) {
+  fail('boxplot must preserve its notebook aspect ratio without cropping');
+}
+if (!/RECOMENDADO/i.test(deck) || !/NÃO APROVA USO EM PRODUÇÃO REAL/i.test(deck)) {
+  fail('deck is missing the bounded recommendation and production caveat');
+}
+if (!/NÃO É ESTIMATIVA EXTERNA/i.test(deck) || !/NÃO SUBSTITUI VALIDAÇÃO EXTERNA/i.test(deck)) {
+  fail('deck is missing validation caveats');
+}
 
 console.log('deck evidence verification passed');

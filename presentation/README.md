@@ -12,16 +12,23 @@ O deck deriva do notebook científico em:
 
 O notebook sustenta a inspeção de `500 × 8`, cinco colunas numéricas, três
 textuais/categóricas, zero valores ausentes e zero linhas completamente
-duplicadas. A Etapa 02 também está refletida no deck: o target é
-`Yearly Amount Spent`, quatro features foram selecionadas, três textos foram excluídos, e a
-divisão reproduzível é de 400 registros para treino e 100 para teste. O
-`StandardScaler` é ajustado somente no treino.
+duplicadas. O target é `Yearly Amount Spent`; quatro features foram
+selecionadas e três textos foram excluídos. A divisão reproduzível é de 400
+registros para treino e 100 para teste, com `StandardScaler` ajustado somente
+no treino e dentro dos pipelines sensíveis à escala.
 
-A EDA foi concluída no conjunto de treinamento e está refletida em seis novos
-slides: distribuição do target e das features, correlações, heatmap,
-multicolinearidade, outliers e síntese. Os gráficos reproduzíveis ficam em
-`slides/ecommerce-oracle/assets/`. O deck não apresenta modelos treinados,
-métricas, conclusões de desempenho ou vencedor.
+O deck acompanha as Etapas 01–06 concluídas no notebook: EDA, cinco
+abordagens de regressão, validação cruzada K-Fold no treino, busca pequena de
+hiperparâmetros, avaliação no teste, diagnósticos visuais e recomendação. Os
+gráficos reproduzíveis ficam em `slides/ecommerce-oracle/assets/`. A conclusão
+mantém as ressalvas do notebook: o SVR Linear tem vantagem numérica marginal,
+mas a Regressão Linear Múltipla é recomendada neste experimento pelo equilíbrio
+entre desempenho, simplicidade e interpretabilidade; isso não é uma aprovação
+para produção real.
+
+As figuras analíticas do deck são os PNGs exportados pelo notebook. Em
+particular, histogramas, heatmap e boxplots são inseridos diretamente como
+imagens proporcionais, sem replotar ou recortar seus dados no React.
 
 ## Executar localmente
 
@@ -47,8 +54,8 @@ node scripts/verify-deck.mjs
 
 ## Organização
 
-- `slides/ecommerce-oracle/`: quinze páginas sustentadas pelo notebook atual.
-- `slides/ecommerce-oracle/assets/`: gráficos da EDA gerados pelo notebook.
+- `slides/ecommerce-oracle/`: vinte páginas sustentadas pelo notebook atual.
+- `slides/ecommerce-oracle/assets/`: gráficos da EDA e dos diagnósticos gerados pelo notebook.
 - `themes/technical-oracle.md`: direção visual e componentes fixos.
 - `themes/technical-oracle.demo.tsx`: demonstração do tema no painel Themes.
 - `scripts/verify-deck.mjs`: checagens de contrato e fidelidade aos outputs do notebook, com contagem dinâmica de páginas e notes.
