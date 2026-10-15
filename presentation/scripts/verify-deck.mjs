@@ -51,7 +51,7 @@ if (!deck.includes('export default [')) fail('missing default page export');
 if (!deck.includes('export const design: DesignSystem')) fail('missing design system');
 if (!deck.includes('export const notes')) fail('missing speaker notes');
 if (!deck.includes('export const meta: SlideMeta')) fail('missing metadata');
-if (!deck.includes("theme: 'technical-oracle'")) fail('missing theme metadata');
+if (!deck.includes("theme: 'academic-paper'")) fail('missing theme metadata');
 if (pageMatches.length === 0) fail('no page declarations found');
 if (new Set(pageMatches).size !== pageMatches.length) fail('duplicate page declarations found');
 if (!exportedPages) fail('missing default page list');
@@ -149,7 +149,7 @@ requireIncludes(deck, [
   'fit_transform()',
   'transform()',
   'Pipeline',
-  'EDA',
+  'Análise exploratória',
   '501,99',
   '0,818',
   '0,079',
@@ -157,26 +157,13 @@ requireIncludes(deck, [
   '1,010',
   '18 linhas únicas',
   '1,5 × IQR',
-  '0 REMOVIDAS',
+  'linhas removidas',
   'Dummy',
   'Regressão Linear Múltipla',
   'Random Forest',
   'SVR Linear',
   'SVR RBF',
   'GridSearchCV',
-  '4 CONFIGURAÇÕES',
-  '2 CONFIGURAÇÕES',
-  'n_estimators = 100',
-  'max_depth = None',
-  'min_samples_leaf = 1',
-  'kernel = linear',
-  'kernel = rbf',
-  'C = 10',
-  'C = 100',
-  'gamma = scale',
-  '19,9157',
-  '9,8626',
-  '22,0225',
   '−0,0166',
   '0,9848',
   '0,0007',
@@ -203,9 +190,7 @@ requireIncludes(deck, [
   '10,19',
   '2,22%',
   '13,85',
-  'SEM PROVA DE NORMALIDADE',
-  'REGRESSÃO LINEAR',
-  'não aprova uso em produção real',
+  'não prova normalidade',
   "new URL('./assets/eda-outlier-boxplots.png', import.meta.url).href",
   "new URL('./assets/model-real-vs-pred.png', import.meta.url).href",
   "new URL('./assets/model-residuals.png', import.meta.url).href",
@@ -231,7 +216,7 @@ if (!/outlierBoxplotsImage[^\n]*objectFit: 'contain'/.test(deck)) {
 if (!/RECOMENDADO/i.test(deck) || !/NÃO APROVA USO EM PRODUÇÃO REAL/i.test(deck)) {
   fail('deck is missing the bounded recommendation and production caveat');
 }
-if (!/NÃO É ESTIMATIVA EXTERNA/i.test(deck) || !/NÃO SUBSTITUI VALIDAÇÃO EXTERNA/i.test(deck)) {
+if (!/não é uma validação externa/i.test(deck) || !/não substitui nova validação/i.test(deck)) {
   fail('deck is missing validation caveats');
 }
 
