@@ -53,3 +53,11 @@ jupyter notebook ecommerce_customers.ipynb
 O notebook deve ser executado com a pasta `notebooks/` como diretório de trabalho, pois utiliza o caminho relativo `../data/Ecommerce Customers` para carregar o dataset. Para executar integralmente sem abrir a interface, use `jupyter nbconvert --to notebook --execute --inplace ecommerce_customers.ipynb` dentro de `notebooks/`.
 
 As dependências Python usam faixas de compatibilidade registradas em `requirements.txt`; elas foram verificadas no ambiente local com Python 3.14.7.
+
+## Dashboard interativo (Streamlit)
+
+O diretório `dashboard/` contém um painel que reproduz o protocolo do notebook (divisão 80/20 com `random_state=42`, EDA no treino, GridSearchCV com K-Fold e avaliação no teste) com gráficos interativos e um simulador de previsão. A partir da raiz do repositório:
+
+```bash
+streamlit run dashboard/app.py
+```
